@@ -5,6 +5,7 @@ import re
 import pandas as pd
 import sys
 from pathlib import Path
+from typing import Dict, Any, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from src.utils.config import Config
@@ -57,41 +58,9 @@ class NLToSQLAgent:
 
     def generate_sql(self, user_question: str, error_context: Optional[str] = None) -> str:
         """
-        Generates DuckDB SQL using active LLM provider or robust offline pattern synthesizer.
+        Generates DuckDB SQL using active LLM provider (Groq, Gemini, OpenAI) or robust offline pattern synthesizer.
         """
-        # 1. Try Gemini
-        if self.gemini_client and self.provider in ("gemini", "auto"):
-            try:
-                prompt = self._build_llm_prompt(user_question, error_context)
-                response = self.gemini_client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=prompt
-                )
-                sql = self._clean_llm_sql_output(response.text)
-                if sql:
-                    return sql
-            except Exception as e:
-                logger.warning(f"Gemini generation error: {e}. Falling back...")
-
-        # 2. Try OpenAI
-        if self.openai_client and self.provider in ("openai", "auto"):
-            try:
-                prompt = self._build_llm_prompt(user_question, error_context)
-                response = self.openai_client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": prompt}
-                    ],
-                    temperature=0.0
-                )
-                sql = self._clean_llm_sql_output(response.choices[0].message.content)
-                if sql:
-                    return sql
-            except Exception as e:
-                logger.warning(f"OpenAI generation error: {e}. Falling back...")
-
-        # 3. Try Groq
+        # 1. Try Groq (if configured or requested)
         if self.groq_client and self.provider in ("groq", "auto"):
             try:
                 prompt = self._build_llm_prompt(user_question, error_context)
@@ -105,9 +74,44 @@ class NLToSQLAgent:
                 )
                 sql = self._clean_llm_sql_output(response.choices[0].message.content)
                 if sql:
+                    logger.info("Generated SQL query via Groq (llama-3.3-70b-versatile).")
                     return sql
             except Exception as e:
                 logger.warning(f"Groq generation error: {e}. Falling back...")
+
+        # 2. Try Gemini
+        if self.gemini_client and self.provider in ("gemini", "auto"):
+            try:
+                prompt = self._build_llm_prompt(user_question, error_context)
+                response = self.gemini_client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=prompt
+                )
+                sql = self._clean_llm_sql_output(response.text)
+                if sql:
+                    logger.info("Generated SQL query via Google Gemini.")
+                    return sql
+            except Exception as e:
+                logger.warning(f"Gemini generation error: {e}. Falling back...")
+
+        # 3. Try OpenAI
+        if self.openai_client and self.provider in ("openai", "auto"):
+            try:
+                prompt = self._build_llm_prompt(user_question, error_context)
+                response = self.openai_client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.0
+                )
+                sql = self._clean_llm_sql_output(response.choices[0].message.content)
+                if sql:
+                    logger.info("Generated SQL query via OpenAI.")
+                    return sql
+            except Exception as e:
+                logger.warning(f"OpenAI generation error: {e}. Falling back...")
 
         # 4. Deterministic Offline SQL Synthesizer
         logger.info("Using offline deterministic SQL synthesizer.")
