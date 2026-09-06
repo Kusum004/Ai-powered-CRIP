@@ -5,6 +5,7 @@ import sqlparse
 import pandas as pd
 import sys
 from pathlib import Path
+from typing import Tuple, Dict, Any, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from src.utils.logger import get_logger
