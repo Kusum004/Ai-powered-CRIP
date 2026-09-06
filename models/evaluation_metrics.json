@@ -1,0 +1,54 @@
+{
+  "timestamp": "2026-09-05 19:45:55",
+  "dataset_records": 307511,
+  "default_rate_pct": 8.072881945686495,
+  "scale_pos_weight": 11.387,
+  "champion_lightgbm": {
+    "cv_roc_auc_mean": 0.7665796593996292,
+    "cv_roc_auc_std": 0.003996928899297636,
+    "oof_roc_auc": 0.7665461164269823,
+    "oof_pr_auc": 0.2519542216957526,
+    "fold_aucs": [
+      0.7623159491658276,
+      0.7714287648183623,
+      0.7639258063426136,
+      0.7714219035521499,
+      0.7638058731191923
+    ],
+    "expected_portfolio_loss": {
+      "false_negatives": 8102,
+      "false_positives": 78523,
+      "true_positives": 16723,
+      "true_negatives": 204163,
+      "total_cost": 159543000.0,
+      "default_losses": 81020000.0,
+      "friction_cost": 78523000.0,
+      "avg_cost_per_applicant": 518.820464958977
+    }
+  },
+  "baseline_logistic_regression": {
+    "cv_roc_auc_mean": 0.7474858341446748,
+    "cv_roc_auc_std": 0.005333252399862358,
+    "oof_roc_auc": 0.7474565214391117,
+    "oof_pr_auc": 0.2246301932509634,
+    "fold_aucs": [
+      0.741597169075958,
+      0.7542575519483083,
+      0.7472449745099151,
+      0.7527064497915178,
+      0.7416230253976751
+    ],
+    "expected_portfolio_loss": {
+      "false_negatives": 8057,
+      "false_positives": 87685,
+      "true_positives": 16768,
+      "true_negatives": 195001,
+      "total_cost": 168255000.0,
+      "default_losses": 80570000.0,
+      "friction_cost": 87685000.0,
+      "avg_cost_per_applicant": 547.1511588203349
+    }
+  },
+  "financial_cost_savings": 8712000.0,
+  "training_duration_seconds": 88.67
+}

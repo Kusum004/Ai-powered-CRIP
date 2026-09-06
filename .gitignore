@@ -1,0 +1,23 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Environment & Keys
+.env
+.venv/
+venv/
+env/
+
+# Large Datasets & Archives
+*.zip
+*.tar.gz
+home-credit-default-risk.zip
+data/*.duckdb*
+
+# OS artifacts
+.DS_Store
+Thumbs.db

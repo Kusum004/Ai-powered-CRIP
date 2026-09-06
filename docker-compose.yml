@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  credit-risk-platform:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: credit_risk_intelligence_platform
+    ports:
+      - "8501:8501"
+    environment:
+      - LOG_LEVEL=INFO
+      - LLM_PROVIDER=gemini
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./documents:/app/documents
+    restart: unless-stopped

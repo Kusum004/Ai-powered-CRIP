@@ -1,0 +1,538 @@
+[
+  {
+    "feature": "PAYMENT_RATE",
+    "importance": 776.6
+  },
+  {
+    "feature": "EXT_SOURCE_3",
+    "importance": 380.6
+  },
+  {
+    "feature": "EXT_SOURCES_MEAN",
+    "importance": 340.0
+  },
+  {
+    "feature": "EXT_SOURCE_1",
+    "importance": 316.2
+  },
+  {
+    "feature": "CREDIT_TO_GOODS_RATIO",
+    "importance": 294.0
+  },
+  {
+    "feature": "DAYS_ID_PUBLISH",
+    "importance": 257.59999999999997
+  },
+  {
+    "feature": "AMT_ANNUITY",
+    "importance": 247.60000000000002
+  },
+  {
+    "feature": "EXT_SOURCE_2",
+    "importance": 236.2
+  },
+  {
+    "feature": "DAYS_BIRTH",
+    "importance": 232.0
+  },
+  {
+    "feature": "AGE_YEARS",
+    "importance": 226.8
+  },
+  {
+    "feature": "EXT_SOURCES_MIN",
+    "importance": 224.60000000000002
+  },
+  {
+    "feature": "AMT_GOODS_PRICE",
+    "importance": 218.60000000000002
+  },
+  {
+    "feature": "DAYS_EMPLOYED_PERC",
+    "importance": 218.0
+  },
+  {
+    "feature": "DAYS_LAST_PHONE_CHANGE",
+    "importance": 214.8
+  },
+  {
+    "feature": "DAYS_REGISTRATION",
+    "importance": 197.8
+  },
+  {
+    "feature": "ANNUITY_INCOME_PERC",
+    "importance": 196.4
+  },
+  {
+    "feature": "OWN_CAR_AGE",
+    "importance": 194.20000000000002
+  },
+  {
+    "feature": "EXT_SOURCES_MAX",
+    "importance": 184.60000000000002
+  },
+  {
+    "feature": "AMT_CREDIT",
+    "importance": 181.60000000000002
+  },
+  {
+    "feature": "INCOME_CREDIT_PERC",
+    "importance": 177.0
+  },
+  {
+    "feature": "INCOME_PER_PERSON",
+    "importance": 162.6
+  },
+  {
+    "feature": "DAYS_EMPLOYED",
+    "importance": 160.4
+  },
+  {
+    "feature": "REGION_POPULATION_RELATIVE",
+    "importance": 156.4
+  },
+  {
+    "feature": "YEARS_EMPLOYED",
+    "importance": 121.60000000000001
+  },
+  {
+    "feature": "AMT_INCOME_TOTAL",
+    "importance": 114.80000000000001
+  },
+  {
+    "feature": "ORGANIZATION_TYPE",
+    "importance": 102.60000000000001
+  },
+  {
+    "feature": "OCCUPATION_TYPE",
+    "importance": 95.4
+  },
+  {
+    "feature": "AMT_REQ_CREDIT_BUREAU_YEAR",
+    "importance": 94.6
+  },
+  {
+    "feature": "EXT_SOURCES_STD",
+    "importance": 93.0
+  },
+  {
+    "feature": "HOUR_APPR_PROCESS_START",
+    "importance": 91.60000000000001
+  },
+  {
+    "feature": "CODE_GENDER",
+    "importance": 88.80000000000001
+  },
+  {
+    "feature": "NAME_EDUCATION_TYPE",
+    "importance": 85.8
+  },
+  {
+    "feature": "NAME_FAMILY_STATUS",
+    "importance": 85.6
+  },
+  {
+    "feature": "TOTALAREA_MODE",
+    "importance": 76.2
+  },
+  {
+    "feature": "AMT_REQ_CREDIT_BUREAU_QRT",
+    "importance": 72.6
+  },
+  {
+    "feature": "YEARS_BEGINEXPLUATATION_MODE",
+    "importance": 65.19999999999999
+  },
+  {
+    "feature": "REGION_RATING_CLIENT_W_CITY",
+    "importance": 63.8
+  },
+  {
+    "feature": "LANDAREA_AVG",
+    "importance": 63.6
+  },
+  {
+    "feature": "COMMONAREA_MODE",
+    "importance": 61.599999999999994
+  },
+  {
+    "feature": "SOCIAL_CIRCLE_DEF_RATIO",
+    "importance": 59.2
+  },
+  {
+    "feature": "YEARS_BEGINEXPLUATATION_AVG",
+    "importance": 58.0
+  },
+  {
+    "feature": "APARTMENTS_MODE",
+    "importance": 56.8
+  },
+  {
+    "feature": "NONLIVINGAREA_AVG",
+    "importance": 56.599999999999994
+  },
+  {
+    "feature": "LANDAREA_MODE",
+    "importance": 56.4
+  },
+  {
+    "feature": "BASEMENTAREA_MODE",
+    "importance": 55.8
+  },
+  {
+    "feature": "YEARS_BEGINEXPLUATATION_MEDI",
+    "importance": 55.599999999999994
+  },
+  {
+    "feature": "BASEMENTAREA_AVG",
+    "importance": 54.599999999999994
+  },
+  {
+    "feature": "NONLIVINGAREA_MODE",
+    "importance": 52.6
+  },
+  {
+    "feature": "LIVINGAREA_MODE",
+    "importance": 51.6
+  },
+  {
+    "feature": "COMMONAREA_AVG",
+    "importance": 49.4
+  },
+  {
+    "feature": "LIVINGAREA_AVG",
+    "importance": 47.6
+  },
+  {
+    "feature": "NAME_CONTRACT_TYPE",
+    "importance": 47.6
+  },
+  {
+    "feature": "APARTMENTS_AVG",
+    "importance": 46.599999999999994
+  },
+  {
+    "feature": "LIVINGAPARTMENTS_MODE",
+    "importance": 46.39999999999999
+  },
+  {
+    "feature": "LIVINGAPARTMENTS_AVG",
+    "importance": 46.2
+  },
+  {
+    "feature": "WEEKDAY_APPR_PROCESS_START",
+    "importance": 46.2
+  },
+  {
+    "feature": "FLAG_WORK_PHONE",
+    "importance": 45.8
+  },
+  {
+    "feature": "FLAG_DOCUMENT_3",
+    "importance": 45.400000000000006
+  },
+  {
+    "feature": "COMMONAREA_MEDI",
+    "importance": 43.2
+  },
+  {
+    "feature": "OBS_30_CNT_SOCIAL_CIRCLE",
+    "importance": 43.0
+  },
+  {
+    "feature": "OBS_60_CNT_SOCIAL_CIRCLE",
+    "importance": 41.4
+  },
+  {
+    "feature": "NONLIVINGAREA_MEDI",
+    "importance": 40.6
+  },
+  {
+    "feature": "LANDAREA_MEDI",
+    "importance": 40.6
+  },
+  {
+    "feature": "BASEMENTAREA_MEDI",
+    "importance": 40.4
+  },
+  {
+    "feature": "YEARS_BUILD_MODE",
+    "importance": 39.6
+  },
+  {
+    "feature": "YEARS_BUILD_AVG",
+    "importance": 39.2
+  },
+  {
+    "feature": "AMT_REQ_CREDIT_BUREAU_MON",
+    "importance": 38.8
+  },
+  {
+    "feature": "LIVINGAREA_MEDI",
+    "importance": 37.6
+  },
+  {
+    "feature": "FLOORSMIN_AVG",
+    "importance": 36.8
+  },
+  {
+    "feature": "NONLIVINGAPARTMENTS_AVG",
+    "importance": 36.8
+  },
+  {
+    "feature": "APARTMENTS_MEDI",
+    "importance": 35.8
+  },
+  {
+    "feature": "ENTRANCES_AVG",
+    "importance": 33.0
+  },
+  {
+    "feature": "NAME_INCOME_TYPE",
+    "importance": 32.8
+  },
+  {
+    "feature": "CNT_FAM_MEMBERS",
+    "importance": 31.6
+  },
+  {
+    "feature": "DEF_60_CNT_SOCIAL_CIRCLE",
+    "importance": 31.4
+  },
+  {
+    "feature": "FLOORSMAX_AVG",
+    "importance": 30.6
+  },
+  {
+    "feature": "LIVINGAPARTMENTS_MEDI",
+    "importance": 27.4
+  },
+  {
+    "feature": "NAME_HOUSING_TYPE",
+    "importance": 27.2
+  },
+  {
+    "feature": "NONLIVINGAPARTMENTS_MODE",
+    "importance": 26.6
+  },
+  {
+    "feature": "ENTRANCES_MODE",
+    "importance": 25.6
+  },
+  {
+    "feature": "NAME_TYPE_SUITE",
+    "importance": 24.2
+  },
+  {
+    "feature": "REG_CITY_NOT_LIVE_CITY",
+    "importance": 23.400000000000002
+  },
+  {
+    "feature": "YEARS_BUILD_MEDI",
+    "importance": 23.200000000000003
+  },
+  {
+    "feature": "WALLSMATERIAL_MODE",
+    "importance": 22.4
+  },
+  {
+    "feature": "FLOORSMIN_MODE",
+    "importance": 22.2
+  },
+  {
+    "feature": "AMT_REQ_CREDIT_BUREAU_WEEK",
+    "importance": 19.4
+  },
+  {
+    "feature": "ENTRANCES_MEDI",
+    "importance": 18.8
+  },
+  {
+    "feature": "FLAG_DOCUMENT_18",
+    "importance": 18.6
+  },
+  {
+    "feature": "FLAG_DOCUMENT_16",
+    "importance": 18.2
+  },
+  {
+    "feature": "DEF_30_CNT_SOCIAL_CIRCLE",
+    "importance": 17.8
+  },
+  {
+    "feature": "CNT_CHILDREN",
+    "importance": 16.0
+  },
+  {
+    "feature": "FLOORSMAX_MODE",
+    "importance": 15.599999999999998
+  },
+  {
+    "feature": "ELEVATORS_AVG",
+    "importance": 15.200000000000001
+  },
+  {
+    "feature": "NONLIVINGAPARTMENTS_MEDI",
+    "importance": 15.200000000000001
+  },
+  {
+    "feature": "FLAG_DOCUMENT_13",
+    "importance": 13.600000000000001
+  },
+  {
+    "feature": "FLOORSMAX_MEDI",
+    "importance": 13.0
+  },
+  {
+    "feature": "ELEVATORS_MODE",
+    "importance": 12.799999999999999
+  },
+  {
+    "feature": "FLAG_PHONE",
+    "importance": 12.200000000000001
+  },
+  {
+    "feature": "FLAG_DOCUMENT_14",
+    "importance": 11.4
+  },
+  {
+    "feature": "REGION_RATING_CLIENT",
+    "importance": 11.0
+  },
+  {
+    "feature": "ELEVATORS_MEDI",
+    "importance": 10.8
+  },
+  {
+    "feature": "FLAG_OWN_REALTY",
+    "importance": 10.0
+  },
+  {
+    "feature": "FLAG_OWN_CAR",
+    "importance": 9.6
+  },
+  {
+    "feature": "FLOORSMIN_MEDI",
+    "importance": 9.2
+  },
+  {
+    "feature": "FONDKAPREMONT_MODE",
+    "importance": 9.2
+  },
+  {
+    "feature": "AMT_REQ_CREDIT_BUREAU_DAY",
+    "importance": 8.8
+  },
+  {
+    "feature": "FLAG_DOCUMENT_8",
+    "importance": 6.8
+  },
+  {
+    "feature": "REG_CITY_NOT_WORK_CITY",
+    "importance": 6.6000000000000005
+  },
+  {
+    "feature": "FLAG_DOCUMENT_15",
+    "importance": 6.4
+  },
+  {
+    "feature": "FLAG_DOCUMENT_11",
+    "importance": 5.6000000000000005
+  },
+  {
+    "feature": "LIVE_CITY_NOT_WORK_CITY",
+    "importance": 5.4
+  },
+  {
+    "feature": "FLAG_EMAIL",
+    "importance": 4.800000000000001
+  },
+  {
+    "feature": "LIVE_REGION_NOT_WORK_REGION",
+    "importance": 4.4
+  },
+  {
+    "feature": "REG_REGION_NOT_LIVE_REGION",
+    "importance": 4.4
+  },
+  {
+    "feature": "AMT_REQ_CREDIT_BUREAU_HOUR",
+    "importance": 3.4000000000000004
+  },
+  {
+    "feature": "FLAG_DOCUMENT_6",
+    "importance": 2.9999999999999996
+  },
+  {
+    "feature": "FLAG_DOCUMENT_5",
+    "importance": 2.8
+  },
+  {
+    "feature": "HOUSETYPE_MODE",
+    "importance": 2.5999999999999996
+  },
+  {
+    "feature": "REG_REGION_NOT_WORK_REGION",
+    "importance": 2.4000000000000004
+  },
+  {
+    "feature": "EMERGENCYSTATE_MODE",
+    "importance": 2.0
+  },
+  {
+    "feature": "FLAG_DOCUMENT_9",
+    "importance": 1.0
+  },
+  {
+    "feature": "FLAG_DOCUMENT_17",
+    "importance": 1.0
+  },
+  {
+    "feature": "FLAG_EMP_PHONE",
+    "importance": 0.6000000000000001
+  },
+  {
+    "feature": "FLAG_DOCUMENT_21",
+    "importance": 0.6
+  },
+  {
+    "feature": "FLAG_DOCUMENT_19",
+    "importance": 0.4
+  },
+  {
+    "feature": "FLAG_CONT_MOBILE",
+    "importance": 0.2
+  },
+  {
+    "feature": "DAYS_EMPLOYED_ANOM",
+    "importance": 0.2
+  },
+  {
+    "feature": "FLAG_MOBIL",
+    "importance": 0.0
+  },
+  {
+    "feature": "FLAG_DOCUMENT_2",
+    "importance": 0.0
+  },
+  {
+    "feature": "FLAG_DOCUMENT_4",
+    "importance": 0.0
+  },
+  {
+    "feature": "FLAG_DOCUMENT_7",
+    "importance": 0.0
+  },
+  {
+    "feature": "FLAG_DOCUMENT_20",
+    "importance": 0.0
+  },
+  {
+    "feature": "FLAG_DOCUMENT_12",
+    "importance": 0.0
+  },
+  {
+    "feature": "FLAG_DOCUMENT_10",
+    "importance": 0.0
+  }
+]
