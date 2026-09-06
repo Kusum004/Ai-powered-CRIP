@@ -17,6 +17,8 @@ env/
 *.tar.gz
 home-credit-default-risk.zip
 data/*.duckdb*
+data/*.csv
+data/
 
 # OS artifacts
 .DS_Store
