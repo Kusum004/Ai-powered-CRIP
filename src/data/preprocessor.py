@@ -2,6 +2,7 @@
 """Feature engineering, ratio calculations, encoding, and data transformation pipeline."""
 import numpy as np
 import pandas as pd
+from pathlib import Path
 from typing import Tuple, List, Dict, Any, Optional
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.impute import SimpleImputer
