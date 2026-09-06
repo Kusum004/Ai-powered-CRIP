@@ -4,10 +4,13 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
-
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Load environment variables (.env with .env.example fallback)
+env_file = BASE_DIR / ".env"
+if not env_file.exists():
+    env_file = BASE_DIR / ".env.example"
+load_dotenv(dotenv_path=env_file, override=True)
 
 class Config:
     # Directories
@@ -45,11 +48,11 @@ class Config:
     COST_FALSE_POSITIVE = 1000.0   # Opportunity cost of lost good customer
     
     # LLM Provider Configuration
-    LLM_PROVIDER = os.getenv("LLM_PROVIDER", "gemini").lower()
+    LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq").lower()
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-    GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-    DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "gemini-2.5-flash")
+    DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "llama-3.3-70b-versatile")
     
     @classmethod
     def ensure_directories(cls):
