@@ -763,8 +763,11 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("### LLM Provider")
-    st.markdown(f"Active Provider: **{Config.LLM_PROVIDER.upper()}**")
-    if Config.GEMINI_API_KEY:
+    active_prov = Config.LLM_PROVIDER.upper()
+    st.markdown(f"Active Provider: **{active_prov}**")
+    if Config.GROQ_API_KEY:
+        st.caption("Groq API Key: Configured (llama-3.3-70b)")
+    elif Config.GEMINI_API_KEY:
         st.caption("Gemini API Key: Configured")
     elif Config.OPENAI_API_KEY:
         st.caption("OpenAI API Key: Configured")
