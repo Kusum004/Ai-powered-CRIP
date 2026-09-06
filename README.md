@@ -13,34 +13,34 @@
 </p>
 
 <p align="center">
-  <b><a href="#-quick-start-guide">🚀 Quick Start</a></b> •
-  <b><a href="documents/project_presentation.pdf">📊 Presentation PDF</a></b> •
-  <b><a href="documents/STUDY_GUIDE.md">📖 Master Study Guide</a></b> •
-  <b><a href="#-system-architecture">🏛️ Architecture</a></b> •
-  <b><a href="#-machine-learning-benchmarks--validation">📈 ML Benchmarks</a></b> •
-  <b><a href="#-candidate-assessment-rubric-compliance">✅ Rubric Verification</a></b>
+  <b><a href="#quick-start-guide">Quick Start</a></b> •
+  <b><a href="documents/project_presentation.pdf">Presentation PDF</a></b> •
+  <b><a href="documents/STUDY_GUIDE.md">Master Study Guide</a></b> •
+  <b><a href="#system-architecture">Architecture</a></b> •
+  <b><a href="#machine-learning-benchmarks--validation">ML Benchmarks</a></b> •
+  <b><a href="#candidate-assessment-rubric-compliance">Rubric Verification</a></b>
 </p>
 
 ---
 
-## 📑 Table of Contents
-1. [Executive Summary & Problem Overview](#-executive-summary--problem-overview)
-2. [System Architecture](#-system-architecture)
-3. [Key Architectural Pillars](#-key-architectural-pillars)
-4. [Machine Learning Benchmarks & Validation](#-machine-learning-benchmarks--validation)
-5. [FICO-Scale Credit Scoring & Basel III Risk Bands](#-fico-scale-credit-scoring--basel-iii-risk-bands)
-6. [Explainable AI (XAI) & Policy Rule Engine](#-explainable-ai-xai--policy-rule-engine)
-7. [Talk-to-Data NL-to-SQL Agentic Copilot](#-talk-to-data-nl-to-sql-agentic-copilot)
-8. [FinTech Cockpit Dashboard (4-Tab Walkthrough)](#-fintech-cockpit-dashboard-4-tab-walkthrough)
-9. [Repository Structure](#-repository-structure)
-10. [Quick Start Guide & Deployment](#-quick-start-guide)
-11. [Testing & Quality Assurance](#-testing--quality-assurance)
-12. [Candidate Assessment Rubric Compliance](#-candidate-assessment-rubric-compliance)
-13. [License & Attribution](#-license--attribution)
+## Table of Contents
+1. [Executive Summary & Problem Overview](#executive-summary--problem-overview)
+2. [System Architecture](#system-architecture)
+3. [Key Architectural Pillars](#key-architectural-pillars)
+4. [Machine Learning Benchmarks & Validation](#machine-learning-benchmarks--validation)
+5. [FICO-Scale Credit Scoring & Basel III Risk Bands](#fico-scale-credit-scoring--basel-iii-risk-bands)
+6. [Explainable AI (XAI) & Policy Rule Engine](#explainable-ai-xai--policy-rule-engine)
+7. [Talk-to-Data NL-to-SQL Agentic Copilot](#talk-to-data-nl-to-sql-agentic-copilot)
+8. [FinTech Cockpit Dashboard (4-Tab Walkthrough)](#fintech-cockpit-dashboard-4-tab-walkthrough)
+9. [Repository Structure](#repository-structure)
+10. [Quick Start Guide & Deployment](#quick-start-guide)
+11. [Testing & Quality Assurance](#testing--quality-assurance)
+12. [Candidate Assessment Rubric Compliance](#candidate-assessment-rubric-compliance)
+13. [License & Attribution](#license--attribution)
 
 ---
 
-## 📌 Executive Summary & Problem Overview
+## Executive Summary & Problem Overview
 
 The **Enterprise Credit Risk Intelligence Platform (CRIP)** is an end-to-end, production-ready quantitative risk and underwriting intelligence system built on the **307,511-record Home Credit Default Risk dataset**.
 
@@ -57,7 +57,7 @@ It bridges the gap between **high-accuracy cost-sensitive machine learning**, **
 
 ---
 
-## 🏛️ System Architecture
+## System Architecture
 
 ```mermaid
 flowchart TD
@@ -96,7 +96,7 @@ flowchart TD
 
 ---
 
-## ⚡ Key Architectural Pillars
+## Key Architectural Pillars
 
 ### 1. Zero-Latency In-Memory OLAP Layer (DuckDB)
 - Ingests **307,511 records** using columnar vectorized execution.
@@ -114,7 +114,7 @@ flowchart TD
 
 ---
 
-## 📈 Machine Learning Benchmarks & Validation
+## Machine Learning Benchmarks & Validation
 
 ### Class Imbalance Strategy: `scale_pos_weight = 11.387` vs SMOTE
 - **Why `scale_pos_weight` is superior**: SMOTE creates synthetic points via interpolation that produce physically impossible combinations (e.g., negative employment years with conflicting housing types) and distorts uncalibrated probabilities. `scale_pos_weight` directly scales the loss gradient on true empirical samples during split finding.
@@ -135,7 +135,7 @@ flowchart TD
 
 ---
 
-## 🎯 FICO-Scale Credit Scoring & Basel III Risk Bands
+## FICO-Scale Credit Scoring & Basel III Risk Bands
 
 ### Mathematical Score Mapping:
 $$\text{Credit Risk Score} = \text{round}\left(850 - (P_{\text{default}} \times 550)\right)$$
@@ -148,7 +148,7 @@ $$\text{Credit Risk Score} = \text{round}\left(850 - (P_{\text{default}} \times 
 
 ---
 
-## 🔍 Explainable AI (XAI) & Policy Rule Engine
+## Explainable AI (XAI) & Policy Rule Engine
 
 ```
                                   SHAP Feature Attribution Waterfall
@@ -168,7 +168,7 @@ $$\text{Credit Risk Score} = \text{round}\left(850 - (P_{\text{default}} \times 
 
 ---
 
-## 💬 Talk-to-Data NL-to-SQL Agentic Copilot
+## Talk-to-Data NL-to-SQL Agentic Copilot
 
 - **Multi-Provider LLM Controller**: Native integration with **Groq (`llama-3.3-70b-versatile`)**, Google Gemini (`gemini-2.5-flash`), and OpenAI (`gpt-4o-mini`).
 - **AST SQL Security Guardrails**: `sqlparse` token validator enforces read-only `SELECT` queries and strictly blocks destructive DDL/DML mutations (`DROP`, `DELETE`, `UPDATE`, `ALTER`, `INSERT`).
@@ -178,7 +178,7 @@ $$\text{Credit Risk Score} = \text{round}\left(850 - (P_{\text{default}} \times 
 
 ---
 
-## 🖥️ FinTech Cockpit Dashboard (4-Tab Walkthrough)
+## FinTech Cockpit Dashboard (4-Tab Walkthrough)
 
 The frontend is an ultra-modern Streamlit Cockpit built with custom CSS design tokens (`#0B0F17` dark slate background, `#161F30` card surfaces, `#00E5FF` electric cyan accents, and zero childish emojis):
 
@@ -191,7 +191,7 @@ The frontend is an ultra-modern Streamlit Cockpit built with custom CSS design t
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 ```text
 Ai-powered-CRIP/
@@ -251,7 +251,7 @@ Ai-powered-CRIP/
 
 ---
 
-## 🚀 Quick Start Guide
+## Quick Start Guide
 
 ### Option 1: Local Python Environment
 
@@ -300,16 +300,16 @@ docker-compose down
 ### Option 3: Streamlit Community Cloud Deployment
 1. Fork or push this repository to GitHub.
 2. In [Streamlit Cloud](https://share.streamlit.io), connect your repo and set main file path to `app.py`.
-3. In **App Settings $\rightarrow$ Secrets**, add your LLM API keys:
+3. In **App Settings -> Secrets**, add your LLM API keys:
    ```toml
    GROQ_API_KEY = "gsk_..."
    LLM_PROVIDER = "groq"
    ```
-4. Deploy! The application will automatically initialize the DuckDB database and load models with zero setup.
+4. Deploy. The application will automatically initialize the DuckDB database and load models with zero setup.
 
 ---
 
-## 🧪 Testing & Quality Assurance
+## Testing & Quality Assurance
 
 The repository includes a comprehensive test suite covering data loading, feature engineering, ML inference, FICO scoring, SHAP explainability, AST SQL sanitization, and database query latency.
 
@@ -327,7 +327,7 @@ python tests/test_platform.py
 
 ---
 
-## ✅ Candidate Assessment Rubric Compliance
+## Candidate Assessment Rubric Compliance
 
 | Rubric Dimension | Weight | Implementation Details | Verified |
 | :--- | :---: | :--- | :---: |
@@ -342,7 +342,7 @@ python tests/test_platform.py
 
 ---
 
-## 📄 License & Attribution
+## License & Attribution
 
 This project is developed as part of the **NeoStats AI Engineering Candidate Assessment**.  
 Licensed under the **MIT License**. Built with Python, DuckDB, LightGBM, SHAP, Groq, and Streamlit.
