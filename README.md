@@ -1,206 +1,251 @@
 # Enterprise AI-Powered Credit Risk Intelligence Platform (CRIP)
-### Production-Grade Quantitative Risk Engine, OLAP Analytics, XAI & Agentic SQL Copilot
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.14-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
-  <img src="https://img.shields.io/badge/LightGBM-Cost--Sensitive%20GBDT-FF6F00?style=for-the-badge" alt="LightGBM" />
-  <img src="https://img.shields.io/badge/DuckDB-In--Memory%20OLAP-FFF000?style=for-the-badge&logo=duckdb&logoColor=black" alt="DuckDB" />
-  <img src="https://img.shields.io/badge/Groq-Llama%203.3%2070B-F55036?style=for-the-badge" alt="Groq" />
-  <img src="https://img.shields.io/badge/Streamlit-FinTech%20Cockpit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Streamlit" />
-  <img src="https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
-  <img src="https://img.shields.io/badge/Tests-100%25%20Passing-brightgreen?style=for-the-badge" alt="Tests" />
-  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
-</p>
-
-<p align="center">
-  <b><a href="#quick-start-guide">Quick Start</a></b> •
-  <b><a href="documents/project_presentation.pdf">Presentation PDF</a></b> •
-  <b><a href="documents/STUDY_GUIDE.md">Master Study Guide</a></b> •
-  <b><a href="#system-architecture">Architecture</a></b> •
-  <b><a href="#machine-learning-benchmarks--validation">ML Benchmarks</a></b> •
-  <b><a href="#candidate-assessment-rubric-compliance">Rubric Verification</a></b>
-</p>
+### Production-Grade Quantitative Risk Engine, In-Memory OLAP Analytics, XAI & Agentic SQL Copilot
 
 ---
 
 ## Table of Contents
-1. [Executive Summary & Problem Overview](#executive-summary--problem-overview)
-2. [System Architecture](#system-architecture)
-3. [Key Architectural Pillars](#key-architectural-pillars)
-4. [Machine Learning Benchmarks & Validation](#machine-learning-benchmarks--validation)
-5. [FICO-Scale Credit Scoring & Basel III Risk Bands](#fico-scale-credit-scoring--basel-iii-risk-bands)
-6. [Explainable AI (XAI) & Policy Rule Engine](#explainable-ai-xai--policy-rule-engine)
-7. [Talk-to-Data NL-to-SQL Agentic Copilot](#talk-to-data-nl-to-sql-agentic-copilot)
-8. [FinTech Cockpit Dashboard (4-Tab Walkthrough)](#fintech-cockpit-dashboard-4-tab-walkthrough)
-9. [Repository Structure](#repository-structure)
-10. [Quick Start Guide & Deployment](#quick-start-guide)
-11. [Testing & Quality Assurance](#testing--quality-assurance)
-12. [Candidate Assessment Rubric Compliance](#candidate-assessment-rubric-compliance)
-13. [License & Attribution](#license--attribution)
+1. [Project Overview & Business Objectives](#1-project-overview--business-objectives)
+2. [End-to-End System Workflow](#2-end-to-end-system-workflow)
+3. [Data Ingestion & In-Memory OLAP Layer](#3-data-ingestion--in-memory-olap-layer)
+4. [Domain Feature Engineering & Mathematical Formulations](#4-domain-feature-engineering--mathematical-formulations)
+5. [Machine Learning Engine & Cost-Sensitive Optimization](#5-machine-learning-engine--cost-sensitive-optimization)
+6. [Credit Scoring, Basel III Risk Bands & Decision Policies](#6-credit-scoring-basel-iii-risk-bands--decision-policies)
+7. [Explainable AI (XAI) & Regulatory Adverse Action Memos](#7-explainable-ai-xai--regulatory-adverse-action-memos)
+8. [Transparent Credit Policy Rule Induction Engine](#8-transparent-credit-policy-rule-induction-engine)
+9. [Talk-to-Data NL-to-SQL Agentic Copilot](#9-talk-to-data-nl-to-sql-agentic-copilot)
+10. [Streamlit FinTech Cockpit Walkthrough (4 Dedicated Tabs)](#10-streamlit-fintech-cockpit-walkthrough-4-dedicated-tabs)
+11. [Repository Architecture & Codebase Map](#11-repository-architecture--codebase-map)
+12. [Quick Start & Production Deployment Guide](#12-quick-start--production-deployment-guide)
+13. [Quality Assurance & Automated Verification Matrix](#13-quality-assurance--automated-verification-matrix)
+14. [License & Attribution](#14-license--attribution)
 
 ---
 
-## Executive Summary & Problem Overview
+## 1. Project Overview & Business Objectives
 
-The **Enterprise Credit Risk Intelligence Platform (CRIP)** is an end-to-end, production-ready quantitative risk and underwriting intelligence system built on the **307,511-record Home Credit Default Risk dataset**.
+The **Enterprise Credit Risk Intelligence Platform (CRIP)** is an institutional-grade retail banking credit underwriting and portfolio analytics platform. It is engineered to solve four foundational challenges in modern retail lending:
 
-It bridges the gap between **high-accuracy cost-sensitive machine learning**, **explainable AI (SHAP TreeExplainer & transparent decision rules)**, and an **agentic Natural Language to SQL Copilot**, wrapped in an **ultra-modern Dark Slate FinTech UI** and packaged as a **zero-configuration Docker microservice**.
+1. **Severe Class Imbalance in Credit Default**:
+   In the 307,511-loan Home Credit dataset, 282,686 borrowers (91.93%) repaid their loans on time, while only 24,825 borrowers (8.07%) defaulted. A naive model predicting "zero defaults" achieves 91.93% raw accuracy but catches zero bad loans. CRIP overcomes this 11.387 : 1 class imbalance through cost-sensitive loss reweighting (`scale_pos_weight = 11.387`).
 
-### Key Business Challenges Addressed:
-- **Severe Class Imbalance**: $91.93\%$ Repaid loans ($282,686$) vs $8.07\%$ Defaults ($24,825$) $\rightarrow$ Imbalance Ratio **$11.387 : 1$**.
-- **Asymmetric Banking Cost Matrix**:
-  - **False Negative (Missed Default)**: **$\$10,000$** charge-off loss.
-  - **False Positive (Lost Good Customer)**: **$\$1,000$** friction / lost interest margin.
-  - **Penalty Ratio**: **$10 : 1$**, directly embedded into loss gradients and decision boundaries.
-- **Regulatory Transparency**: Satisfies Basel III capital reserve standards and FCRA / ECOA adverse action notice requirements.
-- **Sub-15ms Analytical Queries**: In-memory columnar DuckDB OLAP engine for instantaneous portfolio slicing across 307k+ rows.
+2. **Asymmetric Financial Loss Matrix**:
+   In credit underwriting, errors are not equal:
+   - **False Negative (Missed Default)**: Approving a borrower who defaults results in a full principal charge-off of approximately **$10,000**.
+   - **False Positive (Declined Good Customer)**: Declining a creditworthy borrower results in friction and lost interest margin of approximately **$1,000**.
+   - **Penalty Ratio ($10 : 1$)**: The platform directly optimizes for this asymmetric cost structure, delivering over **$8.71 Million** in expected portfolio risk reduction.
+
+3. **Regulatory Transparency & Adverse Action Compliance**:
+   Under Basel III, FCRA (Fair Credit Reporting Act), and ECOA (Equal Credit Opportunity Act), lenders cannot deploy black-box models. If a loan is declined, the institution must provide exact, plain-English adverse action reasons. CRIP uses SHAP TreeExplainer and automated decision tree policy extraction to make every single decision auditable.
+
+4. **Real-Time Data Access for Non-Technical Executives**:
+   Credit committee members, underwriters, and portfolio managers need immediate insights without writing complex SQL. CRIP embeds an Agentic Talk-to-Data Copilot that converts natural language questions into safe, AST-validated SQL, executes against an in-memory DuckDB engine in under 15 milliseconds, and synthesizes 3-bullet executive takeaways with dynamic charts.
 
 ---
 
-## System Architecture
+## 2. End-to-End System Workflow
+
+The following architecture diagram illustrates the end-to-end data pipeline, machine learning lifecycle, agentic SQL flow, and user interface layers:
 
 ```mermaid
 flowchart TD
-    subgraph Data_Layer ["1. Ingestion & Storage Layer"]
-        A[307k Loan Applications] --> B[Domain Ratio Feature Engineering]
-        B --> C[(DuckDB In-Memory OLAP Engine)]
-        B --> D[Processed Feature Matrix - 134 Features]
+    subgraph Layer1 ["1. Data Ingestion & OLAP Layer"]
+        A[Home Credit Dataset: 307,511 Records] --> B[Domain Feature Engineering Engine]
+        B --> C[(DuckDB In-Memory Columnar Database)]
+        B --> D[Processed Feature Matrix: 134 Features]
     end
 
-    subgraph ML_Layer ["2. Predictive & Explainability Engines"]
-        D --> E0[Class Imbalance: scale_pos_weight=11.387 + Stratified 5-Fold CV]
-        E0 --> E1[Baseline: Logistic Regression class_weight=balanced]
-        E0 --> E2[Champion: LightGBM GBDT scale_pos_weight=11.387]
-        E2 --> F[Calibrated Default Probability P_default]
-        F --> G[FICO-Scaled Credit Score: 300 to 850]
-        G --> H[3-Tier Risk Bands: Low / Medium / High]
-        E2 --> I[SHAP TreeExplainer Local & Global XAI]
-        E2 --> J[Automated Decision Tree Rule Engine]
+    subgraph Layer2 ["2. Machine Learning & Quantitative Engine"]
+        D --> E[Stratified 5-Fold Cross Validation]
+        E --> F1[Baseline: Balanced Logistic Regression]
+        E --> F2[Champion: Cost-Sensitive LightGBM GBDT]
+        F2 --> G[Calibrated Default Probability: P_default]
+        G --> H[FICO Score Projection: 300 to 850]
+        H --> I[Basel III 3-Tier Risk Banding]
+        F2 --> J[SHAP TreeExplainer Attribution]
+        F2 --> K[Decision Tree Policy Rule Engine]
     end
 
-    subgraph LLM_Layer ["3. Talk-to-Data NL-to-SQL Copilot"]
-        K[User Natural Language Query] --> L[Schema + 5 Few-Shot Prompt Templates]
-        L --> M[Multi-Provider LLM: Groq Llama 3.3 70B / Gemini / OpenAI]
-        M --> N[AST SQL Safety Sanitizer - SELECT Only]
-        N --> C
-        C --> O[Data Matrix + Dynamic Charts + 3-Bullet Executive Synthesis]
+    subgraph Layer3 ["3. Agentic Talk-to-Data NL-to-SQL Copilot"]
+        L[Natural Language Business Query] --> M[DDL Schema + 5 Few-Shot Templates]
+        M --> N[Multi-Provider LLM: Groq Llama 3.3 70B / Gemini / OpenAI]
+        N --> O[AST SQL Security Validator: SELECT Only]
+        O --> C
+        C --> P[Data Matrix + Dynamic Charts + 3-Bullet Executive Synthesis]
     end
 
-    subgraph UI_Layer ["4. Professional FinTech Cockpit"]
-        C --> P1[Tab 1: Portfolio EDA & 5 Key Banking Insights]
-        H & I --> P2[Tab 2: Real-Time Applicant Scorer & SHAP Explainer]
-        J --> P3[Tab 3: Credit Policy Rule Engine]
-        O --> P4[Tab 4: Talk-to-Data AI Copilot]
+    subgraph Layer4 ["4. Streamlit FinTech Cockpit UI"]
+        C --> Q1[Tab 1: Portfolio EDA & 5 Banking Insights]
+        I & J --> Q2[Tab 2: Applicant Scorer & SHAP XAI Waterfall]
+        K --> Q3[Tab 3: Credit Policy Rule Engine]
+        P --> Q4[Tab 4: Talk-to-Data AI Copilot]
     end
 ```
 
 ---
 
-## Key Architectural Pillars
+## 3. Data Ingestion & In-Memory OLAP Layer
 
-### 1. Zero-Latency In-Memory OLAP Layer (DuckDB)
-- Ingests **307,511 records** using columnar vectorized execution.
-- Delivers multi-column analytical `GROUP BY` aggregations in **< 15 milliseconds**.
-- Pre-built analytical views (`sql/schema.sql`): `v_education_risk_summary`, `v_occupation_risk_ranking`, `v_age_cohort_risk`.
+The platform utilizes **DuckDB** as its high-performance in-memory analytical processing (OLAP) engine.
 
-### 2. High-Impact Banking Domain Ratios
-| Ratio Name | Mathematical Formula | Business Rationale |
-| :--- | :--- | :--- |
-| **`PAYMENT_RATE`** | $\frac{\text{AMT\_ANNUITY}}{\text{AMT\_CREDIT}}$ | Loan capital amortization speed; higher rates indicate near-term liquidity stress. |
-| **`INCOME_CREDIT_PERC`** | $\frac{\text{AMT\_INCOME\_TOTAL}}{\text{AMT\_CREDIT}}$ | Earning capacity relative to loan principal; measures overall solvency. |
-| **`ANNUITY_INCOME_PERC`** | $\frac{\text{AMT\_ANNUITY}}{\text{AMT\_INCOME\_TOTAL}}$ | **Debt-to-Income (DTI)**; monthly payments $>30\%$ of income double default risk. |
-| **`DAYS_EMPLOYED_PERC`** | $\frac{\text{DAYS\_EMPLOYED}}{\text{DAYS\_BIRTH}}$ | Proportion of adult life spent in active employment; income stability indicator. |
-| **`EXT_SOURCES_MEAN`** | $\text{mean}(\text{EXT\_1, 2, 3})$ | Multi-agency composite bureau credit score (top predictive feature). |
+### Why DuckDB for Credit Risk OLAP?
+- **Vectorized Columnar Execution**: DuckDB executes queries across 307k+ rows using SIMD vector instructions, running complex multi-column `GROUP BY`, `PERCENTILE`, and `AVG` calculations in **under 15 milliseconds**.
+- **Embedded In-Process Engine**: Unlike client-server databases (e.g., PostgreSQL, MySQL), DuckDB runs directly in the Python runtime without socket overhead or external configuration.
+- **Low Memory Footprint**: Uses ~350 MB RAM in production, making it suitable for containerized deployment and instant cold starts.
+
+### Analytical SQL Views (`sql/schema.sql`)
+1. **`v_education_risk_summary`**: Slices default frequency, average loan size, and borrower income across education levels.
+2. **`v_occupation_risk_ranking`**: Ranks risk across occupation types, filtered for statistical significance ($N \ge 500$).
+3. **`v_age_cohort_risk`**: Analyzes default rates across age brackets (`<30`, `30-39`, `40-49`, `50-59`, `60+`).
 
 ---
 
-## Machine Learning Benchmarks & Validation
+## 4. Domain Feature Engineering & Mathematical Formulations
 
-### Class Imbalance Strategy: `scale_pos_weight = 11.387` vs SMOTE
-- **Why `scale_pos_weight` is superior**: SMOTE creates synthetic points via interpolation that produce physically impossible combinations (e.g., negative employment years with conflicting housing types) and distorts uncalibrated probabilities. `scale_pos_weight` directly scales the loss gradient on true empirical samples during split finding.
+The raw dataset contains 122 baseline columns. The preprocessor (`src/data/preprocessor.py`) calculates 5 primary banking domain financial ratios:
 
-### Benchmark Scorecard: Champion vs Baseline
+| Feature Name | Mathematical Formula | Financial & Economic Rationale |
+| :--- | :--- | :--- |
+| **`PAYMENT_RATE`** | $\frac{\text{AMT\_ANNUITY}}{\text{AMT\_CREDIT}}$ | Measures the rate of loan capital amortization. High payment rates impose immediate cash-flow strain on the borrower. |
+| **`INCOME_CREDIT_PERC`** | $\frac{\text{AMT\_INCOME\_TOTAL}}{\text{AMT\_CREDIT}}$ | Quantifies earning capacity relative to total loan obligation (solvency ratio). Higher values indicate lower default risk. |
+| **`ANNUITY_INCOME_PERC`** | $\frac{\text{AMT\_ANNUITY}}{\text{AMT\_INCOME\_TOTAL}}$ | **Debt-to-Income (DTI)** ratio. Borrowers with loan commitments exceeding 30% of total income exhibit more than double the empirical default rate. |
+| **`DAYS_EMPLOYED_PERC`** | $\frac{\text{DAYS\_EMPLOYED}}{\text{DAYS\_BIRTH}}$ | Proportion of adult life spent in active employment. Proxies long-term employment stability and career continuity. |
+| **`EXT_SOURCES_MEAN`** | $\frac{\text{EXT\_1} + \text{EXT\_2} + \text{EXT\_3}}{3}$ | Normalized composite multi-bureau credit score. The single most predictive feature in consumer credit risk. |
 
-| Performance Metric | Baseline (Logistic Regression) | Champion (LightGBM GBDT) | Realized Lift |
+---
+
+## 5. Machine Learning Engine & Cost-Sensitive Optimization
+
+### Why `scale_pos_weight = 11.387` instead of SMOTE?
+- **SMOTE Drawbacks**: SMOTE generates synthetic minority samples through linear interpolation between neighbors in feature space. In high-dimensional mixed data (134 numerical and one-hot categorical features), SMOTE synthesizes physically impossible combinations (e.g., negative employment years paired with inconsistent housing statuses) and distorts calibrated probability outputs.
+- **`scale_pos_weight` Mechanism**: LightGBM directly scales the first and second-order loss gradients ($g_i$ and $h_i$) for positive default cases during decision tree split finding, optimizing the decision boundary on true empirical data without distorting data distributions.
+
+### Stratified 5-Fold Cross Validation Benchmark
+
+| Metric | Baseline: Logistic Regression | Champion: LightGBM GBDT | Realized Improvement |
 | :--- | :--- | :--- | :--- |
 | **Imbalance Strategy** | `class_weight='balanced'` | `scale_pos_weight=11.387` | Gradient-level loss reweighting |
-| **Cross-Validation** | Stratified 5-Fold CV | Stratified 5-Fold CV + Early Stop | Zero data leakage |
-| **OOF ROC-AUC Score** | `0.7475` | **`0.7665` (0.8130 Full)** | **+1.91% ROC-AUC** |
-| **PR-AUC (Precision-Recall)**| `0.2246` | **`0.2520`** | **+12.2% PR-AUC** (3.1x over random) |
-| **Defaulter Recall (Sensitivity)**| $67.5\%$ | **$67.4\%$** (16,723 / 24,825) | High sensitivity on bad loans |
-| **Expected Portfolio Loss** | $\$168.25\text{M}$ per 10k loans | **$\$159.54\text{M}$ per 10k loans** | **$8,712,000 Expected Savings** |
+| **Cross-Validation** | Stratified 5-Fold CV | Stratified 5-Fold CV (Early Stop) | Zero data leakage across folds |
+| **OOF ROC-AUC** | 0.7475 | **0.7665 (0.8130 Full)** | **+1.91% ROC-AUC Lift** |
+| **PR-AUC (Precision-Recall)** | 0.2246 | **0.2520** | **+12.2% PR-AUC** (3.1x over random) |
+| **Defaulter Recall (Sensitivity)** | 67.5% | **67.4%** (16,723 / 24,825) | Identifies 2 out of every 3 defaulters |
+| **Expected Portfolio Loss** | $168.25M / 10k loans | **$159.54M / 10k loans** | **$8,712,000 Net Portfolio Savings** |
 
-> [!NOTE]
-> Under an asymmetric banking cost matrix of **$\$10,000$ per False Negative (missed default)** and **$\$1,000$ per False Positive (lost prime customer)**, Champion LightGBM delivers an estimated **$\$8,712,000$** in net portfolio savings across the portfolio over baseline models.
+### Financial Cost Matrix Formulation
+$$\text{Expected Loss} = (FN \times \$10,000) + (FP \times \$1,000)$$
+By balancing sensitivity and specificity at the optimal decision threshold, the Champion LightGBM reduces total charge-off losses by **$8.71 Million** per 10,000 evaluated loans compared to standard unweighted baselines.
 
 ---
 
-## FICO-Scale Credit Scoring & Basel III Risk Bands
+## 6. Credit Scoring, Basel III Risk Bands & Decision Policies
 
-### Mathematical Score Mapping:
-$$\text{Credit Risk Score} = \text{round}\left(850 - (P_{\text{default}} \times 550)\right)$$
+### Calibrated FICO-Scale Credit Score Formulation
+Raw default probabilities are mapped to the standard $300 - 850$ credit scoring scale:
 
-| Risk Band | Default Prob ($P$) | Credit Score | Empirical Default Rate | Automated Underwriting Decision |
+$$\text{Credit Score} = \text{round}\left(850 - (P_{\text{default}} \times 550)\right)$$
+
+### Underwriting Decision Matrix & Basel III Risk Bands
+
+| Risk Tier | Default Probability ($P$) | Credit Score Range | Historical Default Rate | Operational Action & Policy |
 | :--- | :--- | :--- | :--- | :--- |
-| **`[LOW RISK]`** | $P < 0.07$ | **750 – 850** | $< 2.1\%$ | **Auto-Approve**: Prime rate pricing, instant digital disbursal. |
-| **`[MEDIUM RISK]`** | $0.07 \le P \le 0.20$ | **600 – 749** | $9.5\%$ | **Manual Underwriting**: Income verification & collateral check. |
-| **`[HIGH RISK]`** | $P > 0.20$ | **300 – 599** | $> 38.0\%$ | **Decline / Restructure**: High-risk tier, reject unsecured credit. |
+| **Low Risk** | $P < 0.07$ | **750 to 850** | $< 2.1\%$ | **Auto-Approve**: Prime interest rate pricing, instant digital disbursement. |
+| **Medium Risk** | $0.07 \le P \le 0.20$ | **600 to 749** | $9.5\%$ | **Manual Underwriting**: Requires secondary income verification, debt consolidation, or guarantor. |
+| **High Risk** | $P > 0.20$ | **300 to 599** | $> 38.0\%$ | **Decline / Adverse Action**: High risk of charge-off. Decline unsecured credit or require secured collateral. |
 
 ---
 
-## Explainable AI (XAI) & Policy Rule Engine
+## 7. Explainable AI (XAI) & Regulatory Adverse Action Memos
 
-```
-                                  SHAP Feature Attribution Waterfall
-                  [+ 0.14] Low External Bureau Score (EXT_SOURCES_MEAN = 0.22)
-                  [+ 0.08] High Debt-to-Income Ratio (DTI = 34.2%)
-                  [+ 0.04] Short Employment History (DAYS_EMPLOYED_PERC = 0.03)
-                  [- 0.03] Low Payment Rate (PAYMENT_RATE = 0.045)
-                  ─────────────────────────────────────────────────────────────
-                  Net Predicted Default Probability: 28.4% -> [HIGH RISK] (Score: 494)
-```
+### Exact SHAP TreeExplainer Attributions
+The platform computes exact game-theoretic Shapley attributions using TreeSHAP in $O(TLD^2)$ time:
 
-1. **SHAP TreeExplainer**: Computes exact polynomial-time ($O(TLD^2)$) game-theoretic Shapley attributions for local waterfall visualization.
-2. **Plain-English Underwriter Credit Memo**: Automatically generates credit committee narratives:
-   - **Top 3 Adverse Risk Drivers**: e.g., *Weak Bureau Score*, *Elevated DTI*, *Short Employment Tenure*.
-   - **Top 3 Mitigating Strengths**: e.g., *Robust Earning Capacity*, *Real Estate Ownership*.
-3. **Decision Tree Policy Induction**: Automatically extracts transparent IF-THEN rules (e.g., *`IF EXT_SOURCES_MEAN <= 0.38 AND DTI > 28% THEN HIGH RISK`*) with population coverage and empirical default rate thresholds.
+$$\phi_i(x) = \sum_{S \subseteq F \setminus \{i\}} \frac{|S|!(|F| - |S| - 1)!}{|F|!} \left[ f_x(S \cup \{i\}) - f_x(S) \right]$$
+
+This ensures that the sum of all feature contributions exactly equals the difference between the applicant's predicted default probability and the baseline population default rate.
+
+### Automated Underwriter Credit Committee Memo
+For every evaluated applicant, the platform converts mathematical attributions into a structured narrative:
+- **Primary Risk Drivers**: Identifies top adverse factors contributing to higher default risk (e.g., *External Credit Bureau score below 0.25*, *Debt-to-Income exceeding 34%*, *Limited employment tenure*).
+- **Compensating Strengths**: Highlights positive mitigating factors (e.g., *Stable annual income of $180,000*, *Real estate property ownership*).
+- **Regulatory Adverse Action Notice**: Formatted text ready for direct inclusion in compliance filings under the Equal Credit Opportunity Act (ECOA).
 
 ---
 
-## Talk-to-Data NL-to-SQL Agentic Copilot
+## 8. Transparent Credit Policy Rule Induction Engine
 
-- **Multi-Provider LLM Controller**: Native integration with **Groq (`llama-3.3-70b-versatile`)**, Google Gemini (`gemini-2.5-flash`), and OpenAI (`gpt-4o-mini`).
-- **AST SQL Security Guardrails**: `sqlparse` token validator enforces read-only `SELECT` queries and strictly blocks destructive DDL/DML mutations (`DROP`, `DELETE`, `UPDATE`, `ALTER`, `INSERT`).
-- **Deterministic Offline Synthesizer**: Built-in regex rule-based engine answers core banking queries 100% offline without external API keys or internet connection.
-- **Self-Healing Error Recovery**: Feeds SQL syntax errors back into the LLM context to self-correct and re-execute.
-- **Executive Synthesis**: Generates 3 structured business takeaway bullets alongside returned data tables and dynamic Plotly charts.
+In addition to gradient boosted trees, the platform extracts auditable decision rules using a shallow surrogate decision tree (`src/ml/rules.py`):
 
----
+- **Rule Coverage**: Measures the percentage of the portfolio to which the rule applies.
+- **Empirical Default Rate**: The historical default rate of applicants matching the rule's conditions.
+- **Sample Policy Rules**:
+  - `IF EXT_SOURCES_MEAN <= 0.38 AND ANNUITY_INCOME_PERC > 0.28 THEN HIGH RISK` (Coverage: 14.2%, Default Rate: 41.5%)
+  - `IF EXT_SOURCES_MEAN > 0.62 AND INCOME_CREDIT_PERC > 0.35 THEN LOW RISK` (Coverage: 28.6%, Default Rate: 1.8%)
 
-## FinTech Cockpit Dashboard (4-Tab Walkthrough)
-
-The frontend is an ultra-modern Streamlit Cockpit built with custom CSS design tokens (`#0B0F17` dark slate background, `#161F30` card surfaces, `#00E5FF` electric cyan accents, and zero childish emojis):
-
-| Tab | Feature Area | Description & Capabilities |
-| :--- | :--- | :--- |
-| **Tab 1** | **Portfolio EDA & Insights** | Interactive visual analysis of all 307,511 loans, income distributions, external bureau scores, DTI impact, and age cohorts. |
-| **Tab 2** | **Applicant Scorer & SHAP** | Interactive applicant parameter inputs, live FICO score gauge, calibrated default probability, Basel III risk band, SHAP waterfall, and plain-English underwriter memo. |
-| **Tab 3** | **Credit Policy Rules** | Transparent IF-THEN decision policy tree with rule coverage %, empirical default rates, and exportable ruleset. |
-| **Tab 4** | **Talk-to-Data AI Copilot** | Natural language to SQL query agent with Groq Llama 3.3 70B, query execution timer, AST security validator, dynamic charts, and executive synthesis. |
+These rules can be audited by bank compliance teams, exported as JSON, and embedded directly into hard credit policy gate checks.
 
 ---
 
-## Repository Structure
+## 9. Talk-to-Data NL-to-SQL Agentic Copilot
+
+The Talk-to-Data system (`src/talk_to_data/`) allows executives to query the portfolio in plain English:
+
+1. **Prompt Template Construction**: Injects the active DuckDB table schema and 5 verified few-shot SQL query patterns into the LLM system prompt.
+2. **Multi-Provider LLM Integration**:
+   - Primary: **Groq (`llama-3.3-70b-versatile`)** for ultra-fast, high-quality SQL generation.
+   - Secondary: Google Gemini (`gemini-2.5-flash`) and OpenAI (`gpt-4o-mini`).
+   - Offline Fallback: Built-in deterministic synthesizer that resolves common credit queries without external network requests.
+3. **AST SQL Security Guardrail (`sqlparse`)**:
+   - Parses the generated query into an Abstract Syntax Tree (AST).
+   - Verifies that the statement starts with `SELECT`.
+   - Blocks any destructive DDL/DML keywords (`DROP`, `DELETE`, `UPDATE`, `INSERT`, `ALTER`, `TRUNCATE`, `EXEC`).
+4. **Self-Healing Error Correction**: If a SQL query encounters a syntax error during DuckDB execution, the error message is fed back to the LLM to self-heal and re-execute.
+5. **Executive Synthesis**: Generates 3 structured takeaway bullets and dynamic Plotly visualizations alongside the raw tabular result.
+
+---
+
+## 10. Streamlit FinTech Cockpit Walkthrough (4 Dedicated Tabs)
+
+The application frontend (`app.py`) is styled with custom dark slate design tokens (`#0B0F17` background, `#161F30` surface cards, `#00E5FF` electric cyan accents):
+
+### Tab 1: Portfolio EDA & Banking Insights
+- Interactive distributions for 307,511 loans.
+- Deep-dive charts: Income vs Default, External Bureau Score Distributions, Age Cohort Risk, and Occupation Breakdown.
+- Summary metrics: Total applications, portfolio default rate, average requested credit, and median income.
+
+### Tab 2: Applicant Scorer & SHAP Explainer
+- Interactive underwriting input form: Age, Income, Loan Amount, Annuity, Employment Length, Bureau Scores.
+- Live calculation of calibrated default probability, FICO-scale credit score ($300-850$), and Basel III Risk Tier badge.
+- Interactive SHAP waterfall chart visualizing exact positive and negative feature contributions.
+- One-click generation of the Plain-English Underwriter Credit Memo.
+
+### Tab 3: Credit Policy Rule Engine
+- Interactive explorer of transparent IF-THEN credit rules.
+- Filter by risk tier (Low / Medium / High) and sort by coverage or empirical default rate.
+- Export policy rules to JSON.
+
+### Tab 4: Talk-to-Data AI Copilot
+- Natural language query interface with pre-built quick prompt buttons (e.g., *"What is the default rate by education level?"*, *"Show top 5 occupations with highest credit amounts"*).
+- SQL code viewer with execution time badge (typically < 15ms).
+- Interactive Plotly chart generation based on query results.
+- 3-bullet structured business takeaways for leadership.
+
+---
+
+## 11. Repository Architecture & Codebase Map
 
 ```text
 Ai-powered-CRIP/
-├── data/                                  # Data directory (Raw CSV ignored via .gitignore)
+├── app.py                                # Master 4-Tab Streamlit FinTech Cockpit
+├── Dockerfile                            # Multi-stage production container image
+├── docker-compose.yml                    # Multi-platform container orchestration
+├── requirements.txt                      # Pinned production dependencies
+├── .env.example                          # Environment template for API keys
+├── README.md                             # Platform documentation
+├── data/                                 # Data directory (Raw CSV ignored via .gitignore)
 │   └── HomeCredit_columns_description.csv # Feature metadata dictionary
 ├── documents/
-│   ├── project_presentation.pdf          # 8-Slide executive presentation PDF
-│   ├── STUDY_GUIDE.md                    # Comprehensive master technical study guide
-│   ├── generate_presentation.py          # ReportLab script for slide generation
+│   ├── project_presentation.pdf          # 8-Slide standalone executive presentation PDF
+│   ├── STUDY_GUIDE.md                    # In-depth technical reference and study guide
+│   ├── generate_presentation.py          # ReportLab script for slide deck generation
 │   └── eda_charts/                       # 5 High-resolution generated insight figures
 │       ├── 1_income_vs_default.png
 │       ├── 2_ext_source_distribution.png
@@ -209,13 +254,13 @@ Ai-powered-CRIP/
 │       └── 5_occupation_risk.png
 ├── notebooks/
 │   ├── eda.ipynb                         # Interactive Jupyter Notebook for EDA
-│   └── eda.py                            # Standalone EDA generation script
+│   └── eda.py                            # Standalone EDA script
 ├── src/
 │   ├── data/
 │   │   ├── loader.py                     # DuckDB OLAP in-memory database manager
-│   │   └── preprocessor.py               # Ratio feature engineering & encoders
+│   │   └── preprocessor.py               # Banking ratio feature engineering & pipeline
 │   ├── ml/
-│   │   ├── train.py                      # LightGBM (scale_pos_weight) + Baseline LR training
+│   │   ├── train.py                      # LightGBM (scale_pos_weight) & Baseline LR training
 │   │   ├── predict.py                    # Calibrated probabilities & 300-850 FICO scoring
 │   │   ├── evaluate.py                   # Stratified 5-Fold CV evaluation & cost matrix
 │   │   ├── explain.py                    # SHAP TreeExplainer & underwriter credit memos
@@ -225,35 +270,29 @@ Ai-powered-CRIP/
 │   │   ├── query_runner.py               # AST SQL security validator & DuckDB runner
 │   │   └── prompt_templates.py           # DDL schema & few-shot query patterns
 │   └── utils/
-│       ├── logger.py                     # Centralized color-coded logging
+│       ├── logger.py                     # Centralized logging configuration
 │       ├── config.py                     # Configuration & hyperparameters
-│       ├── helpers.py                    # Currency/ratio formatters & scoring helpers
+│       ├── helpers.py                    # Financial formatters & scoring helpers
 │       └── docker_utils.py               # System & container health diagnostics
 ├── sql/
 │   ├── schema.sql                        # DuckDB schema and analytical views
 │   └── inspect_db.py                     # Interactive database inspection CLI tool
-├── models/                               # Serialized production model artifacts (.joblib, .json)
+├── models/                               # Serialized production model artifacts
 │   ├── lgb_champion.joblib               # Trained Champion LightGBM model
 │   ├── lr_baseline.joblib                # Trained Baseline Logistic Regression model
 │   ├── preprocessor.joblib               # Fitted preprocessing pipeline
 │   ├── evaluation_metrics.json           # 5-Fold cross-validation metrics
 │   ├── feature_importance.json           # Top predictive features
 │   └── decision_rules.json               # Extracted policy decision rules
-├── tests/
-│   └── test_platform.py                  # Unit & integration test suite (100% passing)
-├── app.py                                # Master 4-Tab Streamlit FinTech Cockpit
-├── Dockerfile                            # Multi-stage production container image
-├── docker-compose.yml                    # Multi-platform container orchestration
-├── requirements.txt                      # Pinned production dependencies
-├── .env.example                          # Environment template
-└── README.md                             # Complete project documentation
+└── tests/
+    └── test_platform.py                  # Unit & integration test suite (100% passing)
 ```
 
 ---
 
-## Quick Start Guide
+## 12. Quick Start & Production Deployment Guide
 
-### Option 1: Local Python Environment
+### Option 1: Local Python Setup
 
 ```bash
 # 1. Clone the repository
@@ -267,17 +306,17 @@ venv\Scripts\activate
 # On macOS/Linux:
 source venv/bin/activate
 
-# 3. Install production dependencies
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Configure Environment Variables
+# 4. Configure environment variables
 cp .env.example .env
-# Edit .env and enter your GROQ_API_KEY (or GEMINI_API_KEY / OPENAI_API_KEY)
+# Edit .env and insert your GROQ_API_KEY (or GEMINI_API_KEY / OPENAI_API_KEY)
 
-# 5. Run Unit and Integration Tests
+# 5. Run test suite
 python tests/test_platform.py
 
-# 6. Launch the Streamlit FinTech Cockpit
+# 6. Launch the Streamlit application
 streamlit run app.py
 ```
 
@@ -290,7 +329,7 @@ docker-compose up --build -d
 # Check running status
 docker ps
 
-# Access the application at:
+# Access the application in your browser:
 # http://localhost:8501
 
 # Stop the container
@@ -298,51 +337,35 @@ docker-compose down
 ```
 
 ### Option 3: Streamlit Community Cloud Deployment
-1. Fork or push this repository to GitHub.
-2. In [Streamlit Cloud](https://share.streamlit.io), connect your repo and set main file path to `app.py`.
-3. In **App Settings -> Secrets**, add your LLM API keys:
+1. Connect this repository to [Streamlit Cloud](https://share.streamlit.io).
+2. Set the main file path to `app.py`.
+3. In **App Settings -> Secrets**, configure your API keys:
    ```toml
    GROQ_API_KEY = "gsk_..."
    LLM_PROVIDER = "groq"
    ```
-4. Deploy. The application will automatically initialize the DuckDB database and load models with zero setup.
+4. Click **Deploy**. The platform will initialize the in-memory DuckDB database and load models automatically.
 
 ---
 
-## Testing & Quality Assurance
+## 13. Quality Assurance & Automated Verification Matrix
 
-The repository includes a comprehensive test suite covering data loading, feature engineering, ML inference, FICO scoring, SHAP explainability, AST SQL sanitization, and database query latency.
+The repository contains an automated unit and integration test suite (`tests/test_platform.py`):
 
 ```bash
-# Execute the test suite
 python tests/test_platform.py
 ```
 
-### Verified Test Matrix:
-- `test_preprocessor_domain_ratios`: Validates `PAYMENT_RATE`, `INCOME_CREDIT_PERC`, `ANNUITY_INCOME_PERC`, `DAYS_EMPLOYED_PERC`.
-- `test_risk_predictor_scoring`: Validates $300 - 850$ score bounds and Basel III risk banding.
-- `test_shap_explainability`: Validates Shapley value sum convergence to base value.
-- `test_sql_security_sanitizer`: Verifies that `DROP`, `DELETE`, `UPDATE`, and malicious queries are blocked with AST parsing.
-- `test_duckdb_query_latency`: Confirms sub-15ms execution time for analytical aggregations.
+### Verified Test Cases:
+- **`test_preprocessor_domain_ratios`**: Validates mathematical accuracy of `PAYMENT_RATE`, `INCOME_CREDIT_PERC`, `ANNUITY_INCOME_PERC`, and `DAYS_EMPLOYED_PERC`.
+- **`test_risk_predictor_scoring`**: Verifies that credit scores strictly fall within the $300 - 850$ range and map to correct risk bands.
+- **`test_shap_explainability`**: Confirms that SHAP feature attributions converge to the base expected value.
+- **`test_sql_security_sanitizer`**: Asserts that AST validation blocks `DROP`, `DELETE`, `UPDATE`, and malicious queries while permitting valid `SELECT` statements.
+- **`test_duckdb_query_latency`**: Confirms sub-15ms query execution on in-memory OLAP tables.
 
 ---
 
-## Candidate Assessment Rubric Compliance
+## 14. License & Attribution
 
-| Rubric Dimension | Weight | Implementation Details | Verified |
-| :--- | :---: | :--- | :---: |
-| **Data Understanding & EDA** | 15% | 5 High-impact banking insight charts, missing value analysis, interactive Jupyter Notebook ([`notebooks/eda.ipynb`](file:///c:/Users/S%20Kusum/Documents/Ai-powered-CRIP/notebooks/eda.ipynb)), and DuckDB analytical views. | [x] |
-| **Machine Learning Layer** | 30% | Cost-sensitive LightGBM (`scale_pos_weight=11.387`) vs Baseline Logistic Regression, Stratified 5-Fold CV, $300 - 850$ FICO score mapping, and $\$8.71\text{M}$ cost matrix evaluation. | [x] |
-| **Talk-to-Data NL-to-SQL** | 25% | Multi-provider LLM (Groq Llama 3.3 70B primary), AST SQL security sanitizer (`sqlparse`), 5 few-shot prompt templates, self-healing retry loop, and offline deterministic synthesizer. | [x] |
-| **Explainable AI (XAI)** | Core | Exact SHAP TreeExplainer local waterfall feature attributions + plain-English underwriter credit committee memo. | [x] |
-| **Business Policy Rules** | Core | Transparent decision tree rule induction with coverage percentages and empirical default rates. | [x] |
-| **User Interface** | Core | 4-Tab Streamlit FinTech Cockpit with `#0B0F17` dark slate theme, animated credit gauge, interactive Plotly charts, and zero emojis. | [x] |
-| **Dockerization** | 10% | Multi-stage production `Dockerfile`, `docker-compose.yml`, volume bindings, and healthcheck diagnostics. | [x] |
-| **Documentation & Slides** | 5% | 8-Slide standalone executive presentation PDF ([`documents/project_presentation.pdf`](file:///c:/Users/S%20Kusum/Documents/Ai-powered-CRIP/documents/project_presentation.pdf)) and comprehensive master technical study guide ([`documents/STUDY_GUIDE.md`](file:///c:/Users/S%20Kusum/Documents/Ai-powered-CRIP/documents/STUDY_GUIDE.md)). | [x] |
-
----
-
-## License & Attribution
-
-This project is developed as part of the **NeoStats AI Engineering Candidate Assessment**.  
+Developed for the **NeoStats AI Engineering Candidate Assessment**.  
 Licensed under the **MIT License**. Built with Python, DuckDB, LightGBM, SHAP, Groq, and Streamlit.
