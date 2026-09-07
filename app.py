@@ -46,11 +46,11 @@ logger = get_logger("StreamlitApp")
 # ==============================================================================
 CUSTOM_CSS = """
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
     /* Global Base */
     .stApp {
-        background-color: #080C14;
+        background: radial-gradient(circle at 50% 0%, #111A2E 0%, #080C14 60%, #04060A 100%);
         color: #F8FAFC;
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
@@ -68,185 +68,220 @@ CUSTOM_CSS = """
     
     /* Top Navbar Header */
     .platform-header {
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(56, 189, 248, 0.15);
-        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(26, 38, 66, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(56, 189, 248, 0.28);
+        border-radius: 14px;
         padding: 22px 28px;
         margin-bottom: 24px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 12px 35px -5px rgba(0, 0, 0, 0.65), 0 0 20px 0 rgba(56, 189, 248, 0.1);
     }
     .platform-title {
-        font-size: 1.65rem;
+        font-size: 1.75rem;
         font-weight: 800;
         color: #FFFFFF;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.025em;
         margin: 0;
+        background: linear-gradient(90deg, #FFFFFF 0%, #E2E8F0 60%, #38BDF8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
     .platform-subtitle {
-        font-size: 0.88rem;
+        font-size: 0.9rem;
         color: #94A3B8;
-        margin-top: 4px;
+        margin-top: 5px;
         font-weight: 500;
+    }
+
+    /* Live Pulsing Operational Dot */
+    .status-dot-pulse {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #10B981;
+        margin-right: 6px;
+        box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
+        animation: pulse-green 2s infinite;
+    }
+    @keyframes pulse-green {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
     }
     
     /* Metrics / KPI Cards */
     .kpi-card {
-        background: linear-gradient(180deg, #131B2E 0%, #0F172A 100%);
-        border: 1px solid rgba(51, 65, 85, 0.7);
-        border-radius: 10px;
-        padding: 18px 22px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-        transition: transform 0.2s ease, border-color 0.2s ease;
+        background: linear-gradient(180deg, rgba(19, 27, 46, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        border-radius: 12px;
+        padding: 20px 24px;
+        box-shadow: 0 8px 25px -4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #38BDF8, #818CF8);
+        opacity: 0.8;
     }
     .kpi-card:hover {
-        transform: translateY(-3px);
-        border-color: rgba(56, 189, 248, 0.4);
+        transform: translateY(-4px);
+        border-color: rgba(56, 189, 248, 0.5);
+        box-shadow: 0 14px 30px -4px rgba(0, 0, 0, 0.65), 0 0 20px rgba(56, 189, 248, 0.2);
     }
     .kpi-label {
         font-size: 0.78rem;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.08em;
         color: #94A3B8;
         margin-bottom: 8px;
     }
     .kpi-value {
-        font-size: 1.85rem;
+        font-size: 2.05rem;
         font-weight: 800;
         color: #F8FAFC;
-        line-height: 1.2;
+        line-height: 1.15;
+        font-family: 'JetBrains Mono', monospace;
     }
     .kpi-sub {
-        font-size: 0.82rem;
+        font-size: 0.84rem;
         color: #38BDF8;
-        margin-top: 6px;
-        font-weight: 500;
+        margin-top: 8px;
+        font-weight: 600;
     }
 
     /* Decision Badges */
     .badge-auto-approve {
-        background: rgba(16, 185, 129, 0.12);
+        background: rgba(16, 185, 129, 0.16);
         color: #10B981;
-        border: 1px solid rgba(16, 185, 129, 0.4);
+        border: 1px solid rgba(16, 185, 129, 0.45);
         padding: 6px 14px;
-        border-radius: 6px;
+        border-radius: 8px;
         font-weight: 700;
         font-size: 0.9rem;
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
         letter-spacing: 0.03em;
+        box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2);
     }
     .badge-manual-review {
-        background: rgba(245, 158, 11, 0.12);
+        background: rgba(245, 158, 11, 0.16);
         color: #F59E0B;
-        border: 1px solid rgba(245, 158, 11, 0.4);
+        border: 1px solid rgba(245, 158, 11, 0.45);
         padding: 6px 14px;
-        border-radius: 6px;
+        border-radius: 8px;
         font-weight: 700;
         font-size: 0.9rem;
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
         letter-spacing: 0.03em;
+        box-shadow: 0 2px 10px rgba(245, 158, 11, 0.2);
     }
     .badge-decline {
-        background: rgba(239, 68, 68, 0.12);
+        background: rgba(239, 68, 68, 0.16);
         color: #EF4444;
-        border: 1px solid rgba(239, 68, 68, 0.4);
+        border: 1px solid rgba(239, 68, 68, 0.45);
         padding: 6px 14px;
-        border-radius: 6px;
+        border-radius: 8px;
         font-weight: 700;
         font-size: 0.9rem;
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
         letter-spacing: 0.03em;
+        box-shadow: 0 2px 10px rgba(239, 68, 68, 0.2);
     }
     .badge-latency {
-        background: rgba(14, 165, 233, 0.12);
+        background: rgba(14, 165, 233, 0.14);
         color: #38BDF8;
-        border: 1px solid rgba(14, 165, 233, 0.35);
-        padding: 5px 12px;
-        border-radius: 6px;
-        font-size: 0.82rem;
-        font-weight: 600;
+        border: 1px solid rgba(14, 165, 233, 0.4);
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 0.84rem;
+        font-weight: 700;
         font-family: 'JetBrains Mono', monospace;
         display: inline-block;
+        box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
     }
 
     /* Tabs Styling */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
-        background-color: #0E1524;
+        background-color: rgba(14, 21, 36, 0.8);
+        backdrop-filter: blur(12px);
         padding: 8px;
-        border-radius: 10px;
-        border: 1px solid rgba(51, 65, 85, 0.5);
+        border-radius: 12px;
+        border: 1px solid rgba(51, 65, 85, 0.6);
     }
     .stTabs [data-baseweb="tab"] {
         background-color: transparent;
         color: #94A3B8;
         border-radius: 8px;
-        font-weight: 600;
-        padding: 10px 20px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        padding: 10px 22px;
         transition: all 0.2s ease;
+        letter-spacing: 0.02em;
     }
     .stTabs [data-baseweb="tab"]:hover {
         color: #FFFFFF;
-        background-color: rgba(255, 255, 255, 0.03);
+        background-color: rgba(255, 255, 255, 0.05);
     }
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #1E293B 0%, #172033 100%) !important;
+        background: linear-gradient(135deg, #1E293B 0%, #131B2E 100%) !important;
         color: #38BDF8 !important;
-        border: 1px solid rgba(56, 189, 248, 0.3) !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(56, 189, 248, 0.4) !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), 0 0 12px rgba(56, 189, 248, 0.15);
     }
 
     /* Underwriter Summary Card */
     .narrative-card {
         background: linear-gradient(180deg, #131B2E 0%, #0F172A 100%);
-        border: 1px solid rgba(56, 189, 248, 0.25);
+        border: 1px solid rgba(56, 189, 248, 0.3);
         border-left: 4px solid #38BDF8;
-        border-radius: 8px;
-        padding: 18px 22px;
-        margin-top: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    /* Preset Selection Buttons */
-    .preset-chip {
-        display: inline-block;
-        background: #1E293B;
-        border: 1px solid #334155;
-        border-radius: 6px;
-        padding: 4px 10px;
-        margin-right: 6px;
-        font-size: 0.8rem;
-        color: #94A3B8;
+        border-radius: 10px;
+        padding: 20px 24px;
+        margin-top: 14px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     }
 
     /* Telemetry Sidebar Card */
     .sidebar-telemetry {
-        background: #0E1524;
-        border: 1px solid rgba(51, 65, 85, 0.6);
-        border-radius: 8px;
-        padding: 14px;
-        margin-bottom: 16px;
+        background: linear-gradient(180deg, #0E1524 0%, #090E1A 100%);
+        border: 1px solid rgba(51, 65, 85, 0.7);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 18px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
     }
 
     /* Conversational Chat Bubbles (Left & Right Like Image) */
     .chat-row-user {
         display: flex;
         justify-content: flex-end;
-        margin: 14px 0 10px 0;
+        margin: 16px 0 12px 0;
     }
     .chat-bubble-user {
-        background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+        background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
         color: #FFFFFF;
-        border-radius: 20px 20px 4px 20px;
-        padding: 12px 20px;
-        font-size: 0.95rem;
+        border-radius: 22px 22px 4px 22px;
+        padding: 14px 22px;
+        font-size: 0.96rem;
         font-weight: 600;
-        max-width: 72%;
-        box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+        max-width: 74%;
+        box-shadow: 0 6px 18px rgba(109, 40, 217, 0.4);
         word-break: break-word;
         letter-spacing: -0.01em;
     }
@@ -254,51 +289,51 @@ CUSTOM_CSS = """
         display: flex;
         justify-content: flex-start;
         align-items: flex-start;
-        gap: 12px;
-        margin: 14px 0;
+        gap: 14px;
+        margin: 16px 0;
     }
     .chat-bot-avatar {
-        width: 38px;
-        height: 38px;
+        width: 42px;
+        height: 42px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+        background: linear-gradient(135deg, #0EA5E9 0%, #6366F1 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         color: #FFFFFF;
         font-weight: 800;
-        font-size: 0.85rem;
+        font-size: 0.88rem;
         flex-shrink: 0;
-        box-shadow: 0 4px 10px rgba(99, 102, 241, 0.35);
-        border: 2px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
+        border: 2px solid rgba(255, 255, 255, 0.25);
     }
     .chat-bot-content {
         max-width: 86%;
     }
     .chat-bot-label {
-        font-size: 0.78rem;
+        font-size: 0.8rem;
         font-weight: 700;
         color: #94A3B8;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
         letter-spacing: 0.04em;
     }
     .chat-bubble-bot {
-        background: #131B2E;
-        border: 1px solid rgba(56, 189, 248, 0.25);
-        border-radius: 4px 20px 20px 20px;
-        padding: 16px 22px;
+        background: linear-gradient(180deg, #131B2E 0%, #0F172A 100%);
+        border: 1px solid rgba(56, 189, 248, 0.28);
+        border-radius: 4px 22px 22px 22px;
+        padding: 18px 24px;
         color: #F1F5F9;
-        font-size: 0.95rem;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
-        line-height: 1.5;
+        font-size: 0.96rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        line-height: 1.55;
     }
     .chat-quick-pill {
         display: inline-block;
         border: 1.5px solid #8B5CF6;
         color: #C084FC;
-        background: rgba(139, 92, 246, 0.1);
+        background: rgba(139, 92, 246, 0.12);
         border-radius: 20px;
-        padding: 6px 16px;
+        padding: 7px 18px;
         margin: 4px 6px 4px 0;
         font-size: 0.88rem;
         font-weight: 600;
@@ -633,77 +668,89 @@ with tab2:
     st.markdown("#### Quick Applicant Profile Presets:")
     p_col1, p_col2, p_col3, p_col4 = st.columns(4)
     
-    preset_choice = None
+    # Initialize default state values if not present
+    if "form_income" not in st.session_state:
+        st.session_state["form_income"] = 180000.0
+        st.session_state["form_credit"] = 500000.0
+        st.session_state["form_annuity"] = 25000.0
+        st.session_state["form_goods"] = 450000.0
+        st.session_state["form_age"] = 38
+        st.session_state["form_emp"] = 6.5
+        st.session_state["form_ext1"] = 0.55
+        st.session_state["form_ext2"] = 0.62
+        st.session_state["form_ext3"] = 0.58
+        st.session_state["form_edu"] = "Higher education"
+        st.session_state["form_inc_type"] = "Working"
+        st.session_state["form_fam"] = "Married"
+        st.session_state["form_occ"] = "Core staff"
+
     with p_col1:
-        if st.button("Preset: Prime Borrower (Low Risk)", use_container_width=True):
-            preset_choice = "prime"
+        if st.button("Preset: Prime Executive (Low Risk)", use_container_width=True):
+            st.session_state["form_income"] = 250000.0
+            st.session_state["form_credit"] = 400000.0
+            st.session_state["form_annuity"] = 18000.0
+            st.session_state["form_goods"] = 380000.0
+            st.session_state["form_age"] = 45
+            st.session_state["form_emp"] = 12.0
+            st.session_state["form_ext1"] = 0.78
+            st.session_state["form_ext2"] = 0.82
+            st.session_state["form_ext3"] = 0.85
+            st.session_state["form_edu"] = "Higher education"
+            st.session_state["form_inc_type"] = "Commercial associate"
+            st.session_state["form_fam"] = "Married"
+            st.session_state["form_occ"] = "Managers"
+            st.rerun()
+
     with p_col2:
         if st.button("Preset: Moderate Risk Borrower", use_container_width=True):
-            preset_choice = "moderate"
+            st.session_state["form_income"] = 135000.0
+            st.session_state["form_credit"] = 450000.0
+            st.session_state["form_annuity"] = 24000.0
+            st.session_state["form_goods"] = 400000.0
+            st.session_state["form_age"] = 32
+            st.session_state["form_emp"] = 3.5
+            st.session_state["form_ext1"] = 0.45
+            st.session_state["form_ext2"] = 0.48
+            st.session_state["form_ext3"] = 0.50
+            st.session_state["form_edu"] = "Secondary / secondary special"
+            st.session_state["form_inc_type"] = "Working"
+            st.session_state["form_fam"] = "Single / not married"
+            st.session_state["form_occ"] = "Sales staff"
+            st.rerun()
+
     with p_col3:
-        if st.button("Preset: Subprime / Stressed Borrower", use_container_width=True):
-            preset_choice = "subprime"
+        if st.button("Preset: Subprime / Stressed Profile", use_container_width=True):
+            st.session_state["form_income"] = 75000.0
+            st.session_state["form_credit"] = 600000.0
+            st.session_state["form_annuity"] = 38000.0
+            st.session_state["form_goods"] = 550000.0
+            st.session_state["form_age"] = 23
+            st.session_state["form_emp"] = 0.8
+            st.session_state["form_ext1"] = 0.18
+            st.session_state["form_ext2"] = 0.22
+            st.session_state["form_ext3"] = 0.15
+            st.session_state["form_edu"] = "Lower secondary"
+            st.session_state["form_inc_type"] = "Working"
+            st.session_state["form_fam"] = "Single / not married"
+            st.session_state["form_occ"] = "Laborers"
+            st.rerun()
+
     with p_col4:
-        if st.button("Reset Defaults", use_container_width=True):
-            preset_choice = "default"
-
-    # Default preset values
-    val_income = 180000.0
-    val_credit = 500000.0
-    val_annuity = 25000.0
-    val_goods = 450000.0
-    val_age = 38
-    val_emp = 6.5
-    val_ext1 = 0.55
-    val_ext2 = 0.62
-    val_ext3 = 0.58
-    val_edu = "Higher education"
-    val_inc_type = "Working"
-    val_fam = "Married"
-    val_occ = "Core staff"
-
-    if preset_choice == "prime":
-        val_income = 250000.0
-        val_credit = 400000.0
-        val_annuity = 18000.0
-        val_goods = 380000.0
-        val_age = 45
-        val_emp = 12.0
-        val_ext1 = 0.78
-        val_ext2 = 0.82
-        val_ext3 = 0.85
-        val_edu = "Higher education"
-        val_inc_type = "Commercial associate"
-        val_fam = "Married"
-        val_occ = "Managers"
-    elif preset_choice == "moderate":
-        val_income = 135000.0
-        val_credit = 450000.0
-        val_annuity = 24000.0
-        val_goods = 400000.0
-        val_age = 32
-        val_emp = 3.5
-        val_ext1 = 0.45
-        val_ext2 = 0.48
-        val_ext3 = 0.50
-        val_edu = "Secondary / secondary special"
-        val_inc_type = "Working"
-        val_fam = "Single / not married"
-        val_occ = "Sales staff"
-    elif preset_choice == "subprime":
-        val_income = 75000.0
-        val_credit = 600000.0
-        val_annuity = 38000.0
-        val_goods = 550000.0
-        val_age = 23
-        val_emp = 0.8
-        val_ext1 = 0.18
-        val_ext2 = 0.22
-        val_ext3 = 0.15
-        val_edu = "Lower secondary"
-        val_inc_type = "Working"
-        val_fam = "Single / not married"
-        val_occ = "Laborers"
+        if st.button("Reset Baseline Defaults", use_container_width=True):
+            st.session_state["form_income"] = 180000.0
+            st.session_state["form_credit"] = 500000.0
+            st.session_state["form_annuity"] = 25000.0
+            st.session_state["form_goods"] = 450000.0
+            st.session_state["form_age"] = 38
+            st.session_state["form_emp"] = 6.5
+            st.session_state["form_ext1"] = 0.55
+            st.session_state["form_ext2"] = 0.62
+            st.session_state["form_ext3"] = 0.58
+            st.session_state["form_edu"] = "Higher education"
+            st.session_state["form_inc_type"] = "Working"
+            st.session_state["form_fam"] = "Married"
+            st.session_state["form_occ"] = "Core staff"
+            st.rerun()
 
     col_inputs, col_results = st.columns([1, 1.2])
 
@@ -712,27 +759,31 @@ with tab2:
         
         c1, c2 = st.columns(2)
         with c1:
-            amt_income = st.number_input("Annual Income ($)", min_value=10000.0, max_value=5000000.0, value=val_income, step=5000.0)
-            amt_credit = st.number_input("Requested Credit ($)", min_value=20000.0, max_value=4000000.0, value=val_credit, step=10000.0)
-            amt_annuity = st.number_input("Monthly Annuity ($)", min_value=1000.0, max_value=300000.0, value=val_annuity, step=1000.0)
-            age_years = st.slider("Applicant Age (Years)", min_value=20, max_value=75, value=int(val_age))
-            years_employed = st.slider("Years Employed", min_value=0.0, max_value=40.0, value=float(val_emp), step=0.5)
+            amt_income = st.number_input("Annual Income ($)", min_value=10000.0, max_value=5000000.0, value=float(st.session_state["form_income"]), step=5000.0)
+            amt_credit = st.number_input("Requested Credit ($)", min_value=20000.0, max_value=4000000.0, value=float(st.session_state["form_credit"]), step=10000.0)
+            amt_annuity = st.number_input("Monthly Annuity ($)", min_value=1000.0, max_value=300000.0, value=float(st.session_state["form_annuity"]), step=1000.0)
+            age_years = st.slider("Applicant Age (Years)", min_value=20, max_value=75, value=int(st.session_state["form_age"]))
+            years_employed = st.slider("Years Employed", min_value=0.0, max_value=40.0, value=float(st.session_state["form_emp"]), step=0.5)
 
         with c2:
-            amt_goods = st.number_input("Goods Price ($)", min_value=10000.0, max_value=4000000.0, value=val_goods, step=10000.0)
-            education = st.selectbox("Education Level", ["Higher education", "Secondary / secondary special", "Incomplete higher", "Lower secondary", "Academic degree"], index=["Higher education", "Secondary / secondary special", "Incomplete higher", "Lower secondary", "Academic degree"].index(val_edu) if val_edu in ["Higher education", "Secondary / secondary special", "Incomplete higher", "Lower secondary", "Academic degree"] else 0)
-            income_type = st.selectbox("Income Type", ["Working", "Commercial associate", "State servant", "Pensioner"], index=["Working", "Commercial associate", "State servant", "Pensioner"].index(val_inc_type) if val_inc_type in ["Working", "Commercial associate", "State servant", "Pensioner"] else 0)
-            family_status = st.selectbox("Family Status", ["Married", "Single / not married", "Civil marriage", "Separated", "Widow"], index=["Married", "Single / not married", "Civil marriage", "Separated", "Widow"].index(val_fam) if val_fam in ["Married", "Single / not married", "Civil marriage", "Separated", "Widow"] else 0)
-            occupation = st.selectbox("Occupation", ["Core staff", "Managers", "Laborers", "Sales staff", "Drivers", "Accountants", "High skill tech staff"], index=["Core staff", "Managers", "Laborers", "Sales staff", "Drivers", "Accountants", "High skill tech staff"].index(val_occ) if val_occ in ["Core staff", "Managers", "Laborers", "Sales staff", "Drivers", "Accountants", "High skill tech staff"] else 0)
+            amt_goods = st.number_input("Goods Price ($)", min_value=10000.0, max_value=4000000.0, value=float(st.session_state["form_goods"]), step=10000.0)
+            edu_options = ["Higher education", "Secondary / secondary special", "Incomplete higher", "Lower secondary", "Academic degree"]
+            education = st.selectbox("Education Level", edu_options, index=edu_options.index(st.session_state["form_edu"]) if st.session_state["form_edu"] in edu_options else 0)
+            inc_options = ["Working", "Commercial associate", "State servant", "Pensioner"]
+            income_type = st.selectbox("Income Type", inc_options, index=inc_options.index(st.session_state["form_inc_type"]) if st.session_state["form_inc_type"] in inc_options else 0)
+            fam_options = ["Married", "Single / not married", "Civil marriage", "Separated", "Widow"]
+            family_status = st.selectbox("Family Status", fam_options, index=fam_options.index(st.session_state["form_fam"]) if st.session_state["form_fam"] in fam_options else 0)
+            occ_options = ["Core staff", "Managers", "Laborers", "Sales staff", "Drivers", "Accountants", "High skill tech staff"]
+            occupation = st.selectbox("Occupation", occ_options, index=occ_options.index(st.session_state["form_occ"]) if st.session_state["form_occ"] in occ_options else 0)
 
         st.markdown("#### External Bureau Ratings (0.0 to 1.0)")
         b1, b2, b3 = st.columns(3)
         with b1:
-            ext_1 = st.slider("Agency 1 Score", 0.0, 1.0, float(val_ext1), 0.01)
+            ext_1 = st.slider("Agency 1 Score", 0.0, 1.0, float(st.session_state["form_ext1"]), 0.01)
         with b2:
-            ext_2 = st.slider("Agency 2 Score", 0.0, 1.0, float(val_ext2), 0.01)
+            ext_2 = st.slider("Agency 2 Score", 0.0, 1.0, float(st.session_state["form_ext2"]), 0.01)
         with b3:
-            ext_3 = st.slider("Agency 3 Score", 0.0, 1.0, float(val_ext3), 0.01)
+            ext_3 = st.slider("Agency 3 Score", 0.0, 1.0, float(st.session_state["form_ext3"]), 0.01)
 
         c_f1, c_f2 = st.columns(2)
         with c_f1:
@@ -896,6 +947,35 @@ with tab2:
 with tab3:
     st.markdown("### Transparent Credit Policy & Decision Tree Rule Engine")
     st.markdown("Extracted decision tree induction rules provide transparent, deterministic credit guidelines for underwriting committees.")
+
+    # Top Level Tier Summary Cards
+    t_c1, t_c2, t_c3 = st.columns(3)
+    with t_c1:
+        st.markdown("""
+        <div class="kpi-card" style="border-left: 4px solid #10B981;">
+            <div class="kpi-label" style="color: #10B981;">Low Risk Tier &bull; 8 Rules</div>
+            <div class="kpi-value" style="color: #10B981;">1.33% - 6.00%</div>
+            <div class="kpi-sub">Auto-Approve &bull; 30,447+ Applicants Covered</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with t_c2:
+        st.markdown("""
+        <div class="kpi-card" style="border-left: 4px solid #F59E0B;">
+            <div class="kpi-label" style="color: #F59E0B;">Medium Risk Tier &bull; 5 Rules</div>
+            <div class="kpi-value" style="color: #F59E0B;">6.10% - 13.99%</div>
+            <div class="kpi-sub">Manual Underwriting &bull; 14,237+ Applicants</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with t_c3:
+        st.markdown("""
+        <div class="kpi-card" style="border-left: 4px solid #EF4444;">
+            <div class="kpi-label" style="color: #EF4444;">High Risk Tier &bull; 3 Rules</div>
+            <div class="kpi-value" style="color: #EF4444;">19.19% - 28.68%</div>
+            <div class="kpi-sub">Decline / Restructure &bull; 5,344+ Applicants</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
 
     # Load / Extract Rules
     rules_list = rule_engine.fit_and_extract_rules() if not rule_engine.rules else rule_engine.rules
