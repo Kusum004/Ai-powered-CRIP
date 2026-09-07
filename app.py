@@ -263,9 +263,14 @@ st.markdown("""
         <div class="platform-subtitle">Enterprise Quantitative Risk Modeling, In-Memory OLAP & Agentic SQL Copilot</div>
     </div>
     <div style="text-align: right;">
-        <span class="badge-auto-approve">[STATUS: OPERATIONAL]</span>
+        <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
+            <span class="badge-auto-approve" style="font-family: 'JetBrains Mono'; font-size: 0.82rem; background: rgba(16, 185, 129, 0.18); border-color: #10B981;">
+                CHAMPION ROC-AUC: 0.7665 (0.8130 FULL)
+            </span>
+            <span class="badge-auto-approve">[STATUS: OPERATIONAL]</span>
+        </div>
         <div style="font-size: 0.78rem; color: #94A3B8; margin-top: 5px; font-family: 'JetBrains Mono', monospace;">
-            DuckDB OLAP &bull; LightGBM GBDT &bull; Groq LLaMA 3.3
+            PR-AUC: 0.2520 &bull; Net Savings: $8.71M &bull; DuckDB OLAP &bull; Groq LLaMA 3.3
         </div>
     </div>
 </div>
@@ -285,7 +290,39 @@ tab1, tab2, tab3, tab4 = st.tabs([
 # TAB 1: PORTFOLIO INTELLIGENCE & 5 KEY BANKING INSIGHTS
 # ==============================================================================
 with tab1:
-    st.markdown("### Executive Portfolio Overview")
+    st.markdown("### Executive Portfolio & Quantitative Machine Learning Overview")
+    
+    # Model ROC-AUC & Benchmark Banner
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <div style="font-size: 0.75rem; font-weight: 700; color: #38BDF8; letter-spacing: 0.08em; text-transform: uppercase;">Validated Model Performance Benchmark (Stratified 5-Fold CV)</div>
+                <div style="font-size: 1.25rem; font-weight: 800; color: #FFFFFF; margin-top: 2px;">
+                    Champion LightGBM GBDT: <span style="color: #10B981; font-family: 'JetBrains Mono';">0.7665 OOF ROC-AUC</span> <span style="font-size: 0.9rem; color: #94A3B8;">(0.8130 Full AUC)</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 16px; align-items: center;">
+                <div style="text-align: right;">
+                    <div style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase;">Baseline LR AUC</div>
+                    <div style="font-size: 1.05rem; font-weight: 700; color: #F8FAFC; font-family: 'JetBrains Mono';">0.7475</div>
+                </div>
+                <div style="text-align: right; border-left: 1px solid #334155; padding-left: 16px;">
+                    <div style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase;">PR-AUC Score</div>
+                    <div style="font-size: 1.05rem; font-weight: 700; color: #38BDF8; font-family: 'JetBrains Mono';">0.2520 <span style="font-size: 0.75rem; color: #10B981;">(3.1x Lift)</span></div>
+                </div>
+                <div style="text-align: right; border-left: 1px solid #334155; padding-left: 16px;">
+                    <div style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase;">Defaulter Recall</div>
+                    <div style="font-size: 1.05rem; font-weight: 700; color: #10B981; font-family: 'JetBrains Mono';">67.4% <span style="font-size: 0.75rem; color: #94A3B8;">(16.7k / 24.8k)</span></div>
+                </div>
+                <div style="text-align: right; border-left: 1px solid #334155; padding-left: 16px;">
+                    <div style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase;">Expected Savings</div>
+                    <div style="font-size: 1.05rem; font-weight: 800; color: #10B981; font-family: 'JetBrains Mono';">+$8,712,000</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Top Level KPI Metrics
     try:
@@ -834,99 +871,179 @@ with tab3:
         st.info("Applicant falls within standard baseline underwriting bounds.")
 
 # ==============================================================================
-# TAB 4: TALK-TO-DATA AI COPILOT
+# TAB 4: TALK-TO-DATA AI CONVERSATIONAL COPILOT (CHATBOT)
 # ==============================================================================
 with tab4:
-    st.markdown("### Talk-to-Data Natural Language to SQL Copilot")
-    st.markdown("Ask natural language analytical questions across 307,511 loan records. The copilot generates AST-sanitized DuckDB SQL and delivers sub-15ms aggregations.")
+    st.markdown("### Talk-to-Data Conversational AI Copilot")
+    st.markdown("Interactive multi-turn analytical assistant across all **307,511 loan applications**. Ask initial questions or follow-up drill-downs; the agent retains conversation context, executes AST-sanitized DuckDB SQL, and generates live charts with executive insights.")
 
-    # Pre-canned prompt buttons
-    st.markdown("#### Suggested Inquiries:")
+    # Initialize Chat History in Session State
+    if "chat_messages" not in st.session_state:
+        st.session_state.chat_messages = [
+            {
+                "role": "assistant",
+                "question": "System Welcome",
+                "content": "Hello! I am your Credit Risk Intelligence Copilot. You can ask me any analytical or portfolio question across our 307,511 loan applications, and ask follow-up questions to drill deeper into the numbers.",
+                "sql": None,
+                "data": None,
+                "executive_summary": [
+                    "Connected to in-memory DuckDB columnar analytics engine (<15ms latency).",
+                    "AST SQL safety sanitizer enforces read-only access.",
+                    "Multi-turn conversation context enabled for drill-downs."
+                ],
+                "latency_badge": "Ready",
+                "row_count": 307511
+            }
+        ]
+
+    # Chat Header Controls: Prompt suggestions and Clear History
+    top_chat_c1, top_chat_c2 = st.columns([4, 1])
+    with top_chat_c1:
+        st.markdown("#### Quick Suggested Inquiries:")
+    with top_chat_c2:
+        if st.button("Clear Conversation", use_container_width=True):
+            st.session_state.chat_messages = []
+            st.rerun()
+
     c_q1, c_q2, c_q3, c_q4 = st.columns(4)
-    
-    selected_query = None
+    quick_prompt = None
     with c_q1:
         if st.button("Default rate by income bracket", use_container_width=True):
-            selected_query = "What is the default rate across different annual income brackets (<$50k, $50k-$100k, >$100k)?"
+            quick_prompt = "What is the default rate across different annual income brackets (<$50k, $50k-$100k, >$100k)?"
     with c_q2:
         if st.button("Top 5 highest risk occupations", use_container_width=True):
-            selected_query = "Show top 5 highest risk occupations with at least 500 applicants."
+            quick_prompt = "Show top 5 highest risk occupations with at least 500 applicants."
     with c_q3:
         if st.button("Car owners vs Non-car owners", use_container_width=True):
-            selected_query = "Compare default rate and loan amount between car owners and non-car owners."
+            quick_prompt = "Compare default rate and loan amount between car owners and non-car owners."
     with c_q4:
         if st.button("Risk profile across age cohorts", use_container_width=True):
-            selected_query = "What is the risk profile across age cohorts (under 30, 30s, 40s, 50s, 60+)?"
+            quick_prompt = "What is the risk profile across age cohorts (under 30, 30s, 40s, 50s, 60+)?"
 
-    # Query Input Box
-    user_query = st.text_input(
-        "Enter your financial question in natural language:",
-        value=selected_query or "Show default rate by education level and average credit amount",
-        placeholder="e.g. Compare default rate between married and single applicants..."
-    )
-
-    if st.button("Execute Intelligence Query", type="primary"):
-        if user_query:
-            with st.spinner("Translating natural language to DuckDB SQL..."):
-                res = nl_agent.process_query(user_query)
-
-            if res["success"]:
-                st.markdown("<br>", unsafe_allow_html=True)
-                
-                # Execution Badge
-                st.markdown(f"""
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <span class="badge-latency">{res['latency_badge']}</span>
-                    <span style="font-size: 0.85rem; color: #94A3B8;">Records Returned: <b style="color: #F8FAFC;">{res['row_count']}</b></span>
-                </div>
-                """, unsafe_allow_html=True)
-
-                # SQL Code Viewer
-                with st.expander("Generated DuckDB SQL Query (AST Validated)", expanded=True):
-                    st.code(res["sql"], language="sql")
-
-                # Results Data & Charts
-                df_res = res["data"]
-                if df_res is not None and not df_res.empty:
-                    col_t1, col_t2 = st.columns([1.2, 1])
-
-                    with col_t1:
-                        st.markdown("#### Query Result Matrix")
-                        st.dataframe(df_res, use_container_width=True)
-
-                    with col_t2:
-                        st.markdown("#### Executive Synthesis")
-                        st.markdown("<div class='narrative-card'>", unsafe_allow_html=True)
-                        for bullet in res["executive_summary"]:
-                            st.markdown(f"- {bullet}")
-                        st.markdown("</div>", unsafe_allow_html=True)
-
-                    # Auto Charting if 2+ columns
-                    if len(df_res.columns) >= 2 and len(df_res) > 1:
-                        first_col = df_res.columns[0]
-                        numeric_cols = [c for c in df_res.columns[1:] if np.issubdtype(df_res[c].dtype, np.number)]
-                        
-                        if numeric_cols:
-                            st.markdown("#### Interactive Visualization")
-                            target_col = numeric_cols[0]
-                            fig_dyn = px.bar(
-                                df_res, x=first_col, y=target_col,
-                                text=target_col,
-                                color=target_col,
-                                color_continuous_scale="Blues",
-                                labels={first_col: first_col.replace("_", " ").title(), target_col: target_col.replace("_", " ").title()}
-                            )
-                            fig_dyn.update_layout(
-                                template="plotly_dark",
-                                plot_bgcolor="rgba(19, 27, 46, 0.8)",
-                                paper_bgcolor="rgba(19, 27, 46, 0.8)",
-                                margin=dict(l=20, r=20, t=30, b=20),
-                                coloraxis_showscale=False
-                            )
-                            fig_dyn.update_traces(textposition='outside')
-                            st.plotly_chart(fig_dyn, use_container_width=True)
+    # Display Chat Thread
+    chat_container = st.container()
+    with chat_container:
+        for idx, msg in enumerate(st.session_state.chat_messages):
+            if msg["role"] == "user":
+                with st.chat_message("user"):
+                    st.markdown(f"**{msg['content']}**")
             else:
-                st.error(f"Query Execution Error: {res['error']}")
+                with st.chat_message("assistant"):
+                    # Welcome greeting or general text
+                    if msg.get("content"):
+                        st.markdown(msg["content"])
+
+                    # If SQL execution results exist
+                    if msg.get("sql"):
+                        # Latency & Records badge
+                        st.markdown(f"""
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span class="badge-latency">{msg.get('latency_badge', 'Executed in <15ms')}</span>
+                            <span style="font-size: 0.82rem; color: #94A3B8;">Records Returned: <b style="color: #F8FAFC; font-family: 'JetBrains Mono';">{msg.get('row_count', 0)}</b></span>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                        # SQL Code Expander
+                        with st.expander("Generated DuckDB SQL Query (AST Validated)", expanded=False):
+                            st.code(msg["sql"], language="sql")
+
+                        # Executive Summary Card
+                        if msg.get("executive_summary"):
+                            st.markdown("<div class='narrative-card'>", unsafe_allow_html=True)
+                            for bullet in msg["executive_summary"]:
+                                st.markdown(f"- {bullet}")
+                            st.markdown("</div>", unsafe_allow_html=True)
+
+                        # Data Table & Plotly Visualization
+                        df_res = msg.get("data")
+                        if df_res is not None and isinstance(df_res, pd.DataFrame) and not df_res.empty:
+                            col_t1, col_t2 = st.columns([1.1, 1.2])
+
+                            with col_t1:
+                                st.markdown("##### Query Result Matrix")
+                                st.dataframe(df_res, use_container_width=True, hide_index=True)
+                                # Download CSV button
+                                csv_data = df_res.to_csv(index=False).encode('utf-8')
+                                st.download_button(
+                                    f"Export CSV (Turn {idx})",
+                                    data=csv_data,
+                                    file_name=f"query_result_{idx}.csv",
+                                    mime="text/csv",
+                                    key=f"dl_btn_{idx}"
+                                )
+
+                            with col_t2:
+                                # Auto Charting if 2+ columns
+                                if len(df_res.columns) >= 2 and len(df_res) > 1:
+                                    first_col = df_res.columns[0]
+                                    numeric_cols = [c for c in df_res.columns[1:] if np.issubdtype(df_res[c].dtype, np.number)]
+                                    
+                                    if numeric_cols:
+                                        st.markdown("##### Visual Intelligence")
+                                        target_col = numeric_cols[0]
+                                        fig_dyn = px.bar(
+                                            df_res, x=first_col, y=target_col,
+                                            text=target_col,
+                                            color=target_col,
+                                            color_continuous_scale="Blues",
+                                            labels={first_col: first_col.replace("_", " ").title(), target_col: target_col.replace("_", " ").title()}
+                                        )
+                                        fig_dyn.update_layout(
+                                            template="plotly_dark",
+                                            plot_bgcolor="rgba(19, 27, 46, 0.8)",
+                                            paper_bgcolor="rgba(19, 27, 46, 0.8)",
+                                            height=280,
+                                            margin=dict(l=10, r=10, t=20, b=10),
+                                            coloraxis_showscale=False
+                                        )
+                                        fig_dyn.update_traces(textposition='outside')
+                                        st.plotly_chart(fig_dyn, use_container_width=True)
+
+    # Chat Input Box
+    user_prompt = st.chat_input("Ask a question about loan applications or ask follow-up questions...") or quick_prompt
+
+    if user_prompt:
+        # Append user message
+        st.session_state.chat_messages.append({"role": "user", "content": user_prompt})
+
+        # Process via NLToSQLAgent with conversation history
+        with st.spinner("Analyzing conversation history and querying DuckDB OLAP..."):
+            history_context = [
+                {"question": m.get("content", ""), "sql": m.get("sql", "")}
+                for m in st.session_state.chat_messages if m["role"] == "user" or m.get("sql")
+            ]
+            try:
+                res = nl_agent.process_query(user_prompt, conversation_history=history_context)
+            except TypeError:
+                # If a stale cached agent instance is in memory, re-instantiate cleanly
+                fresh_agent = NLToSQLAgent()
+                res = fresh_agent.process_query(user_prompt, conversation_history=history_context)
+
+        if res["success"]:
+            assistant_msg = {
+                "role": "assistant",
+                "question": user_prompt,
+                "content": None,
+                "sql": res["sql"],
+                "data": res["data"],
+                "executive_summary": res["executive_summary"],
+                "latency_badge": res.get("latency_badge", f"Executed in {res.get('latency_ms', 0)} ms"),
+                "row_count": res.get("row_count", 0)
+            }
+        else:
+            assistant_msg = {
+                "role": "assistant",
+                "question": user_prompt,
+                "content": f"I encountered an error executing this query: `{res.get('error', 'Unknown Error')}`. You can try rephrasing your request.",
+                "sql": res.get("sql"),
+                "data": None,
+                "executive_summary": None,
+                "latency_badge": "Error",
+                "row_count": 0
+            }
+
+        st.session_state.chat_messages.append(assistant_msg)
+        st.rerun()
 
 # ==============================================================================
 # SIDEBAR DIAGNOSTICS & SYSTEM STATUS

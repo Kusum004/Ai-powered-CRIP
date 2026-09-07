@@ -56,14 +56,18 @@ class NLToSQLAgent:
             except Exception as e:
                 logger.warning(f"Could not initialize Groq client: {e}")
 
-    def generate_sql(self, user_question: str, error_context: Optional[str] = None) -> str:
+    def generate_sql(self, user_question: str, error_context: Optional[str] = None, conversation_history: Optional[List[Dict[str, Any]]] = None, *args, **kwargs) -> str:
         """
-        Generates DuckDB SQL using active LLM provider (Groq, Gemini, OpenAI) or robust offline pattern synthesizer.
+        Generates DuckDB SQL using active LLM provider (Groq, Gemini, OpenAI) or robust offline pattern synthesizer,
+        incorporating multi-turn conversation history for follow-up queries.
         """
+        # In case conversation_history was passed in kwargs
+        if conversation_history is None:
+            conversation_history = kwargs.get("conversation_history")
         # 1. Try Groq (if configured or requested)
         if self.groq_client and self.provider in ("groq", "auto"):
             try:
-                prompt = self._build_llm_prompt(user_question, error_context)
+                prompt = self._build_llm_prompt(user_question, error_context, conversation_history)
                 response = self.groq_client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
                     messages=[
@@ -82,7 +86,7 @@ class NLToSQLAgent:
         # 2. Try Gemini
         if self.gemini_client and self.provider in ("gemini", "auto"):
             try:
-                prompt = self._build_llm_prompt(user_question, error_context)
+                prompt = self._build_llm_prompt(user_question, error_context, conversation_history)
                 response = self.gemini_client.models.generate_content(
                     model="gemini-2.5-flash",
                     contents=prompt
@@ -97,7 +101,7 @@ class NLToSQLAgent:
         # 3. Try OpenAI
         if self.openai_client and self.provider in ("openai", "auto"):
             try:
-                prompt = self._build_llm_prompt(user_question, error_context)
+                prompt = self._build_llm_prompt(user_question, error_context, conversation_history)
                 response = self.openai_client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
@@ -115,17 +119,30 @@ class NLToSQLAgent:
 
         # 4. Deterministic Offline SQL Synthesizer
         logger.info("Using offline deterministic SQL synthesizer.")
-        return self._offline_sql_synthesizer(user_question)
+        return self._offline_sql_synthesizer(user_question, conversation_history)
 
-    def _build_llm_prompt(self, question: str, error_context: Optional[str] = None) -> str:
+    def _build_llm_prompt(self, question: str, error_context: Optional[str] = None, conversation_history: Optional[List[Dict[str, Any]]] = None) -> str:
         few_shot_str = ""
         for ex in FEW_SHOT_EXAMPLES:
             few_shot_str += f"Question: {ex['question']}\nSQL:\n{ex['sql']}\n\n"
 
         prompt = f"{SYSTEM_PROMPT}\n\nFew-shot verified examples:\n{few_shot_str}\n"
+        
+        # Inject conversation history if available
+        if conversation_history:
+            prompt += "--- CONVERSATION CONTEXT & PREVIOUS TURNS ---\n"
+            for idx, turn in enumerate(conversation_history[-3:], 1):
+                prev_q = turn.get("question", "")
+                prev_sql = turn.get("sql", "")
+                prompt += f"Turn {idx} User Question: {prev_q}\n"
+                if prev_sql:
+                    prompt += f"Turn {idx} Executed SQL:\n{prev_sql}\n"
+            prompt += "--------------------------------------------\n"
+            prompt += "Note: If the current user question is a follow-up, refinement, or modification of the previous query (e.g., adding filters, changing groupings, drill-down), adapt the previous SQL appropriately.\n\n"
+
         if error_context:
             prompt += f"IMPORTANT: The previous query failed with error: {error_context}. Please write a corrected SQL query.\n"
-        prompt += f"User Question: {question}\nOutput SQL:"
+        prompt += f"Current User Question: {question}\nOutput SQL:"
         return prompt
 
     def _clean_llm_sql_output(self, text: str) -> str:
@@ -140,11 +157,35 @@ class NLToSQLAgent:
             text = "\n".join(lines).strip()
         return text
 
-    def _offline_sql_synthesizer(self, question: str) -> str:
+    def _offline_sql_synthesizer(self, question: str, conversation_history: Optional[List[Dict[str, Any]]] = None) -> str:
         """
-        High-accuracy financial SQL synthesizer covering key banking risk questions.
+        High-accuracy financial SQL synthesizer covering key banking risk questions and follow-ups.
         """
         q = question.lower()
+
+        # Follow-up filter handling using previous queries
+        if conversation_history and len(conversation_history) > 0:
+            last_turn = conversation_history[-1]
+            last_sql = last_turn.get("sql", "")
+            if "filter" in q or "only" in q or "where" in q or "above" in q or "under" in q:
+                if "under 30" in q or "< 30" in q or "young" in q:
+                    if "WHERE" in last_sql:
+                        return last_sql.replace("WHERE", "WHERE ABS(DAYS_BIRTH)/365.25 < 30 AND")
+                    elif "GROUP BY" in last_sql:
+                        parts = last_sql.split("GROUP BY")
+                        return f"{parts[0]} WHERE ABS(DAYS_BIRTH)/365.25 < 30 GROUP BY{parts[1]}"
+                if "over 40" in q or "above 40" in q or "> 40" in q:
+                    if "WHERE" in last_sql:
+                        return last_sql.replace("WHERE", "WHERE ABS(DAYS_BIRTH)/365.25 > 40 AND")
+                    elif "GROUP BY" in last_sql:
+                        parts = last_sql.split("GROUP BY")
+                        return f"{parts[0]} WHERE ABS(DAYS_BIRTH)/365.25 > 40 GROUP BY{parts[1]}"
+                if "car" in q:
+                    if "WHERE" in last_sql:
+                        return last_sql.replace("WHERE", "WHERE FLAG_OWN_CAR = 'Y' AND")
+                    elif "GROUP BY" in last_sql:
+                        parts = last_sql.split("GROUP BY")
+                        return f"{parts[0]} WHERE FLAG_OWN_CAR = 'Y' GROUP BY{parts[1]}"
 
         if "occupation" in q or "job" in q:
             return """
@@ -156,6 +197,7 @@ SELECT
     ROUND(AVG(AMT_INCOME_TOTAL), 2) AS avg_annual_income,
     ROUND(AVG(AMT_CREDIT), 2) AS avg_loan_amount
 FROM loan_applications
+WHERE OCCUPATION_TYPE IS NOT NULL
 GROUP BY OCCUPATION_TYPE
 HAVING COUNT(*) >= 500
 ORDER BY default_rate_pct DESC
@@ -176,7 +218,7 @@ GROUP BY NAME_EDUCATION_TYPE
 ORDER BY default_rate_pct DESC;
             """.strip()
 
-        if "income" in q and ("bracket" in q or "tier" in q or "distribution" in q or "range" in q or "level" in q):
+        if "income" in q and ("bracket" in q or "tier" in q or "distribution" in q or "range" in q or "level" in q or "quintile" in q):
             return """
 SELECT 
     CASE 
@@ -309,18 +351,22 @@ GROUP BY NAME_INCOME_TYPE
 ORDER BY default_rate_pct DESC;
         """.strip()
 
-    def process_query(self, user_question: str) -> Dict[str, Any]:
+    def process_query(self, user_question: str, conversation_history: Optional[List[Dict[str, Any]]] = None, *args, **kwargs) -> Dict[str, Any]:
         """
         End-to-end agentic workflow: NL -> SQL -> AST Validate -> Execute -> Self-Heal -> Executive Summary.
+        Supports multi-turn interactive conversational follow-ups.
         """
-        # Step 1: Initial SQL Generation
-        sql_query = self.generate_sql(user_question)
+        if conversation_history is None:
+            conversation_history = kwargs.get("conversation_history")
+
+        # Step 1: Initial SQL Generation with conversation history context
+        sql_query = self.generate_sql(user_question, conversation_history=conversation_history)
         result = self.runner.execute_safe_query(sql_query)
 
         # Step 2: Self-Healing Retry Loop (if error occurs)
         if not result["success"]:
             logger.info("First SQL attempt failed. Triggering automated self-healing loop...")
-            corrected_sql = self.generate_sql(user_question, error_context=result["error"])
+            corrected_sql = self.generate_sql(user_question, error_context=result["error"], conversation_history=conversation_history)
             result = self.runner.execute_safe_query(corrected_sql)
 
         # Step 3: Generate Executive Business Synthesis
