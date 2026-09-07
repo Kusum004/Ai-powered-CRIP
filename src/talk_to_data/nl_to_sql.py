@@ -52,7 +52,17 @@ class NLToSQLAgent:
             try:
                 from groq import Groq
                 self.groq_client = Groq(api_key=groq_key)
-                logger.info("Initialized Groq client.")
+                # Auto-discover working Groq model
+                self.groq_model = "openai/gpt-oss-120b"
+                try:
+                    available = [m.id for m in self.groq_client.models.list().data]
+                    for candidate in ["openai/gpt-oss-120b", "llama-3.3-70b-versatile", "qwen/qwen3.8-27b", "openai/gpt-oss-20b", "llama-3.1-70b-versatile", "llama-3.1-8b-instant"]:
+                        if candidate in available:
+                            self.groq_model = candidate
+                            break
+                except Exception:
+                    pass
+                logger.info(f"Initialized Groq client with model: {self.groq_model}.")
             except Exception as e:
                 logger.warning(f"Could not initialize Groq client: {e}")
 
@@ -66,22 +76,23 @@ class NLToSQLAgent:
             conversation_history = kwargs.get("conversation_history")
         # 1. Try Groq (if configured or requested)
         if self.groq_client and self.provider in ("groq", "auto"):
-            try:
-                prompt = self._build_llm_prompt(user_question, error_context, conversation_history)
-                response = self.groq_client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
-                    messages=[
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": prompt}
-                    ],
-                    temperature=0.0
-                )
-                sql = self._clean_llm_sql_output(response.choices[0].message.content)
-                if sql:
-                    logger.info("Generated SQL query via Groq (llama-3.3-70b-versatile).")
-                    return sql
-            except Exception as e:
-                logger.warning(f"Groq generation error: {e}. Falling back...")
+            for candidate_model in [getattr(self, "groq_model", "openai/gpt-oss-120b"), "openai/gpt-oss-120b", "qwen/qwen3.8-27b", "openai/gpt-oss-20b", "llama-3.3-70b-versatile"]:
+                try:
+                    prompt = self._build_llm_prompt(user_question, error_context, conversation_history)
+                    response = self.groq_client.chat.completions.create(
+                        model=candidate_model,
+                        messages=[
+                            {"role": "system", "content": SYSTEM_PROMPT},
+                            {"role": "user", "content": prompt}
+                        ],
+                        temperature=0.0
+                    )
+                    sql = self._clean_llm_sql_output(response.choices[0].message.content)
+                    if sql:
+                        logger.info(f"Generated SQL query via Groq ({candidate_model}).")
+                        return sql
+                except Exception as e:
+                    logger.warning(f"Groq generation error with {candidate_model}: {e}. Trying next candidate...")
 
         # 2. Try Gemini
         if self.gemini_client and self.provider in ("gemini", "auto"):
