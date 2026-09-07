@@ -18,7 +18,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Import internal modules
+# Import internal modules with reload support to prevent stale Streamlit worker caches
+import importlib
+import src.utils.config
+import src.talk_to_data.nl_to_sql
+importlib.reload(src.utils.config)
+importlib.reload(src.talk_to_data.nl_to_sql)
+
 from src.utils.config import Config
 from src.utils.logger import get_logger
 from src.utils.helpers import format_currency, format_percent, fico_to_risk_tier, prob_to_credit_score
@@ -871,179 +877,193 @@ with tab3:
         st.info("Applicant falls within standard baseline underwriting bounds.")
 
 # ==============================================================================
-# TAB 4: TALK-TO-DATA AI CONVERSATIONAL COPILOT (CHATBOT)
+# TAB 4: TALK-TO-DATA AI CONVERSATIONAL COPILOT (SPLIT LEFT/RIGHT COCKPIT)
 # ==============================================================================
 with tab4:
-    st.markdown("### Talk-to-Data Conversational AI Copilot")
-    st.markdown("Interactive multi-turn analytical assistant across all **307,511 loan applications**. Ask initial questions or follow-up drill-downs; the agent retains conversation context, executes AST-sanitized DuckDB SQL, and generates live charts with executive insights.")
-
     # Initialize Chat History in Session State
     if "chat_messages" not in st.session_state:
-        st.session_state.chat_messages = [
-            {
-                "role": "assistant",
-                "question": "System Welcome",
-                "content": "Hello! I am your Credit Risk Intelligence Copilot. You can ask me any analytical or portfolio question across our 307,511 loan applications, and ask follow-up questions to drill deeper into the numbers.",
-                "sql": None,
-                "data": None,
-                "executive_summary": [
-                    "Connected to in-memory DuckDB columnar analytics engine (<15ms latency).",
-                    "AST SQL safety sanitizer enforces read-only access.",
-                    "Multi-turn conversation context enabled for drill-downs."
-                ],
-                "latency_badge": "Ready",
-                "row_count": 307511
-            }
-        ]
+        st.session_state.chat_messages = []
+    if "last_query_result" not in st.session_state:
+        st.session_state.last_query_result = None
 
-    # Chat Header Controls: Prompt suggestions and Clear History
-    top_chat_c1, top_chat_c2 = st.columns([4, 1])
-    with top_chat_c1:
-        st.markdown("#### Quick Suggested Inquiries:")
-    with top_chat_c2:
-        if st.button("Clear Conversation", use_container_width=True):
-            st.session_state.chat_messages = []
+    col_ask, col_answer = st.columns([1, 1.3], gap="large")
+
+    # --------------------------------------------------------------------------
+    # LEFT COLUMN: ASK QUESTIONS ABOUT LOANS (INPUT & DIALOGUE CONTROLS)
+    # --------------------------------------------------------------------------
+    with col_ask:
+        st.markdown("### Ask Questions About Loans")
+        st.markdown("Query the **307,511 loan applications** in natural language. Ask initial portfolio questions or follow-up drill-downs.")
+
+        # Quick Suggested Inquiries (2x2 Grid)
+        st.markdown("#### Suggested Financial Inquiries:")
+        sq_col1, sq_col2 = st.columns(2)
+        
+        quick_query = None
+        with sq_col1:
+            if st.button("Default rate by income bracket", use_container_width=True, key="sq_btn_1"):
+                quick_query = "What is the default rate across different annual income brackets (<$50k, $50k-$100k, >$100k)?"
+            if st.button("Car owners vs Non-car owners", use_container_width=True, key="sq_btn_2"):
+                quick_query = "Compare default rate and loan amount between car owners and non-car owners."
+        with sq_col2:
+            if st.button("Top 5 highest risk occupations", use_container_width=True, key="sq_btn_3"):
+                quick_query = "Show top 5 highest risk occupations with at least 500 applicants."
+            if st.button("Risk across age cohorts", use_container_width=True, key="sq_btn_4"):
+                quick_query = "What is the risk profile across age cohorts (under 30, 30s, 40s, 50s, 60+)?"
+
+        # Question Input Area
+        st.markdown("<br>", unsafe_allow_html=True)
+        user_input_val = quick_query or ""
+        
+        query_text = st.text_area(
+            "Enter your loan inquiry or follow-up statement:",
+            value=user_input_val,
+            placeholder="e.g. Show default rate by education level and average credit amount...\nor follow-up: Filter that query for borrowers over 40...",
+            height=110,
+            key="nl_query_input"
+        )
+
+        btn_c1, btn_c2 = st.columns([1.5, 1])
+        with btn_c1:
+            run_query_btn = st.button("Execute Intelligence Query", type="primary", use_container_width=True, key="run_nl_btn")
+        with btn_c2:
+            if st.button("Clear Thread", use_container_width=True, key="clear_nl_btn"):
+                st.session_state.chat_messages = []
+                st.session_state.last_query_result = None
+                st.rerun()
+
+        # Execute Query Logic
+        if run_query_btn and query_text.strip():
+            active_q = query_text.strip()
+            # Append to history
+            st.session_state.chat_messages.append({"role": "user", "content": active_q})
+
+            with st.spinner("Analyzing inquiry and executing in-memory DuckDB query..."):
+                history_context = [
+                    {"question": m.get("content", ""), "sql": m.get("sql", "")}
+                    for m in st.session_state.chat_messages if m["role"] == "user" or m.get("sql")
+                ]
+                try:
+                    res = nl_agent.process_query(active_q, conversation_history=history_context)
+                except TypeError:
+                    fresh_agent = NLToSQLAgent()
+                    res = fresh_agent.process_query(active_q, conversation_history=history_context)
+
+            st.session_state.last_query_result = res
+            st.session_state.chat_messages.append({
+                "role": "assistant",
+                "question": active_q,
+                "sql": res.get("sql"),
+                "data": res.get("data"),
+                "executive_summary": res.get("executive_summary"),
+                "latency_badge": res.get("latency_badge", "Executed in <25ms"),
+                "row_count": res.get("row_count", 0),
+                "success": res.get("success", False),
+                "error": res.get("error")
+            })
             st.rerun()
 
-    c_q1, c_q2, c_q3, c_q4 = st.columns(4)
-    quick_prompt = None
-    with c_q1:
-        if st.button("Default rate by income bracket", use_container_width=True):
-            quick_prompt = "What is the default rate across different annual income brackets (<$50k, $50k-$100k, >$100k)?"
-    with c_q2:
-        if st.button("Top 5 highest risk occupations", use_container_width=True):
-            quick_prompt = "Show top 5 highest risk occupations with at least 500 applicants."
-    with c_q3:
-        if st.button("Car owners vs Non-car owners", use_container_width=True):
-            quick_prompt = "Compare default rate and loan amount between car owners and non-car owners."
-    with c_q4:
-        if st.button("Risk profile across age cohorts", use_container_width=True):
-            quick_prompt = "What is the risk profile across age cohorts (under 30, 30s, 40s, 50s, 60+)?"
+        # Conversation History Stream on Left
+        if st.session_state.chat_messages:
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown("#### Conversation Inquiry History:")
+            for i, msg in enumerate(st.session_state.chat_messages):
+                if msg["role"] == "user":
+                    st.markdown(f"""
+                    <div style="background: #131B2E; border-left: 3px solid #38BDF8; border-radius: 4px; padding: 8px 12px; margin-bottom: 6px; font-size: 0.85rem; color: #E2E8F0;">
+                        <b>Q{i//2 + 1}:</b> {msg['content']}
+                    </div>
+                    """, unsafe_allow_html=True)
 
-    # Display Chat Thread
-    chat_container = st.container()
-    with chat_container:
-        for idx, msg in enumerate(st.session_state.chat_messages):
-            if msg["role"] == "user":
-                with st.chat_message("user"):
-                    st.markdown(f"**{msg['content']}**")
-            else:
-                with st.chat_message("assistant"):
-                    # Welcome greeting or general text
-                    if msg.get("content"):
-                        st.markdown(msg["content"])
+    # --------------------------------------------------------------------------
+    # RIGHT COLUMN: ANSWERS, DATA & VISUAL INTELLIGENCE
+    # --------------------------------------------------------------------------
+    with col_answer:
+        st.markdown("### Answers & Quantitative Intelligence")
+        
+        last_res = st.session_state.last_query_result
 
-                    # If SQL execution results exist
-                    if msg.get("sql"):
-                        # Latency & Records badge
-                        st.markdown(f"""
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span class="badge-latency">{msg.get('latency_badge', 'Executed in <15ms')}</span>
-                            <span style="font-size: 0.82rem; color: #94A3B8;">Records Returned: <b style="color: #F8FAFC; font-family: 'JetBrains Mono';">{msg.get('row_count', 0)}</b></span>
-                        </div>
-                        """, unsafe_allow_html=True)
+        if last_res and last_res.get("success"):
+            # Execution Telemetry Header
+            st.markdown(f"""
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #0E1524; padding: 8px 14px; border-radius: 6px; border: 1px solid #1E293B;">
+                <span class="badge-latency">{last_res.get('latency_badge', 'Executed in <25ms')}</span>
+                <span style="font-size: 0.82rem; color: #94A3B8;">Records Returned: <b style="color: #F8FAFC; font-family: 'JetBrains Mono';">{last_res.get('row_count', 0)}</b></span>
+                <span style="font-size: 0.78rem; color: #10B981; font-weight: 700;">[AST SAFETY: READ-ONLY SELECT]</span>
+            </div>
+            """, unsafe_allow_html=True)
 
-                        # SQL Code Expander
-                        with st.expander("Generated DuckDB SQL Query (AST Validated)", expanded=False):
-                            st.code(msg["sql"], language="sql")
+            # 1. Executive Synthesis
+            if last_res.get("executive_summary"):
+                st.markdown("#### Executive Synthesis & Key Takeaways")
+                st.markdown("<div class='narrative-card'>", unsafe_allow_html=True)
+                for bullet in last_res["executive_summary"]:
+                    st.markdown(f"- {bullet}")
+                st.markdown("</div>", unsafe_allow_html=True)
 
-                        # Executive Summary Card
-                        if msg.get("executive_summary"):
-                            st.markdown("<div class='narrative-card'>", unsafe_allow_html=True)
-                            for bullet in msg["executive_summary"]:
-                                st.markdown(f"- {bullet}")
-                            st.markdown("</div>", unsafe_allow_html=True)
+            # 2. Result Data Table & CSV Download
+            df_ans = last_res.get("data")
+            if df_ans is not None and isinstance(df_ans, pd.DataFrame) and not df_ans.empty:
+                st.markdown("<br>", unsafe_allow_html=True)
+                d_c1, d_c2 = st.columns([3, 1])
+                with d_c1:
+                    st.markdown("#### Result Data Matrix")
+                with d_c2:
+                    csv_bytes = df_ans.to_csv(index=False).encode('utf-8')
+                    st.download_button(
+                        "Export CSV",
+                        data=csv_bytes,
+                        file_name="loan_intelligence_result.csv",
+                        mime="text/csv",
+                        use_container_width=True,
+                        key="dl_ans_csv"
+                    )
+                st.dataframe(df_ans, use_container_width=True, hide_index=True)
 
-                        # Data Table & Plotly Visualization
-                        df_res = msg.get("data")
-                        if df_res is not None and isinstance(df_res, pd.DataFrame) and not df_res.empty:
-                            col_t1, col_t2 = st.columns([1.1, 1.2])
+                # 3. Dynamic Interactive Visualization
+                if len(df_ans.columns) >= 2 and len(df_ans) > 1:
+                    first_col = df_ans.columns[0]
+                    numeric_cols = [c for c in df_ans.columns[1:] if np.issubdtype(df_ans[c].dtype, np.number)]
+                    
+                    if numeric_cols:
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        st.markdown("#### Visual Intelligence Chart")
+                        target_col = numeric_cols[0]
+                        fig_dyn = px.bar(
+                            df_ans, x=first_col, y=target_col,
+                            text=target_col,
+                            color=target_col,
+                            color_continuous_scale="Blues",
+                            labels={first_col: first_col.replace("_", " ").title(), target_col: target_col.replace("_", " ").title()}
+                        )
+                        fig_dyn.update_layout(
+                            template="plotly_dark",
+                            plot_bgcolor="rgba(19, 27, 46, 0.8)",
+                            paper_bgcolor="rgba(19, 27, 46, 0.8)",
+                            height=300,
+                            margin=dict(l=10, r=10, t=20, b=10),
+                            coloraxis_showscale=False
+                        )
+                        fig_dyn.update_traces(textposition='outside')
+                        st.plotly_chart(fig_dyn, use_container_width=True)
 
-                            with col_t1:
-                                st.markdown("##### Query Result Matrix")
-                                st.dataframe(df_res, use_container_width=True, hide_index=True)
-                                # Download CSV button
-                                csv_data = df_res.to_csv(index=False).encode('utf-8')
-                                st.download_button(
-                                    f"Export CSV (Turn {idx})",
-                                    data=csv_data,
-                                    file_name=f"query_result_{idx}.csv",
-                                    mime="text/csv",
-                                    key=f"dl_btn_{idx}"
-                                )
+            # 4. Generated SQL Code Expander
+            st.markdown("<br>", unsafe_allow_html=True)
+            with st.expander("View Generated DuckDB SQL Query", expanded=False):
+                st.code(last_res.get("sql", "-- No SQL available"), language="sql")
 
-                            with col_t2:
-                                # Auto Charting if 2+ columns
-                                if len(df_res.columns) >= 2 and len(df_res) > 1:
-                                    first_col = df_res.columns[0]
-                                    numeric_cols = [c for c in df_res.columns[1:] if np.issubdtype(df_res[c].dtype, np.number)]
-                                    
-                                    if numeric_cols:
-                                        st.markdown("##### Visual Intelligence")
-                                        target_col = numeric_cols[0]
-                                        fig_dyn = px.bar(
-                                            df_res, x=first_col, y=target_col,
-                                            text=target_col,
-                                            color=target_col,
-                                            color_continuous_scale="Blues",
-                                            labels={first_col: first_col.replace("_", " ").title(), target_col: target_col.replace("_", " ").title()}
-                                        )
-                                        fig_dyn.update_layout(
-                                            template="plotly_dark",
-                                            plot_bgcolor="rgba(19, 27, 46, 0.8)",
-                                            paper_bgcolor="rgba(19, 27, 46, 0.8)",
-                                            height=280,
-                                            margin=dict(l=10, r=10, t=20, b=10),
-                                            coloraxis_showscale=False
-                                        )
-                                        fig_dyn.update_traces(textposition='outside')
-                                        st.plotly_chart(fig_dyn, use_container_width=True)
-
-    # Chat Input Box
-    user_prompt = st.chat_input("Ask a question about loan applications or ask follow-up questions...") or quick_prompt
-
-    if user_prompt:
-        # Append user message
-        st.session_state.chat_messages.append({"role": "user", "content": user_prompt})
-
-        # Process via NLToSQLAgent with conversation history
-        with st.spinner("Analyzing conversation history and querying DuckDB OLAP..."):
-            history_context = [
-                {"question": m.get("content", ""), "sql": m.get("sql", "")}
-                for m in st.session_state.chat_messages if m["role"] == "user" or m.get("sql")
-            ]
-            try:
-                res = nl_agent.process_query(user_prompt, conversation_history=history_context)
-            except TypeError:
-                # If a stale cached agent instance is in memory, re-instantiate cleanly
-                fresh_agent = NLToSQLAgent()
-                res = fresh_agent.process_query(user_prompt, conversation_history=history_context)
-
-        if res["success"]:
-            assistant_msg = {
-                "role": "assistant",
-                "question": user_prompt,
-                "content": None,
-                "sql": res["sql"],
-                "data": res["data"],
-                "executive_summary": res["executive_summary"],
-                "latency_badge": res.get("latency_badge", f"Executed in {res.get('latency_ms', 0)} ms"),
-                "row_count": res.get("row_count", 0)
-            }
+        elif last_res and not last_res.get("success"):
+            st.error(f"Query Error: {last_res.get('error', 'Execution failed')}")
         else:
-            assistant_msg = {
-                "role": "assistant",
-                "question": user_prompt,
-                "content": f"I encountered an error executing this query: `{res.get('error', 'Unknown Error')}`. You can try rephrasing your request.",
-                "sql": res.get("sql"),
-                "data": None,
-                "executive_summary": None,
-                "latency_badge": "Error",
-                "row_count": 0
-            }
-
-        st.session_state.chat_messages.append(assistant_msg)
-        st.rerun()
+            # Default State before any query
+            st.markdown("""
+            <div style="background: linear-gradient(180deg, #131B2E 0%, #0F172A 100%); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 32px 24px; text-align: center; margin-top: 10px;">
+                <div style="font-size: 1.1rem; font-weight: 700; color: #F8FAFC; margin-bottom: 8px;">Waiting for your loan inquiry...</div>
+                <div style="font-size: 0.88rem; color: #94A3B8; max-width: 520px; margin: 0 auto; line-height: 1.5;">
+                    Select a suggested question on the left or type your custom query. The agent will execute sub-15ms SQL against the DuckDB OLAP engine and present structured business insights, tabular data, and dynamic charts here.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
 # ==============================================================================
 # SIDEBAR DIAGNOSTICS & SYSTEM STATUS
