@@ -42,24 +42,29 @@ from src.ml.train import train_all_models
 logger = get_logger("StreamlitApp")
 
 # ==============================================================================
-# CUSTOM ENTERPRISE FINTECH CSS (DARK SLATE PALETTE, MODERN GLASSMORPHISM)
+# ==============================================================================
+# CUSTOM ENTERPRISE FINTECH CSS (LIGHT & NEOSTATS EMERALD GREEN PALETTE)
 # ==============================================================================
 CUSTOM_CSS = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
-    /* Global Base */
+    /* Global Base - Crisp Clean Light with Emerald Hue */
     .stApp {
-        background: radial-gradient(circle at 50% 0%, #111A2E 0%, #080C14 60%, #04060A 100%);
-        color: #F8FAFC;
+        background: radial-gradient(circle at 50% 0%, #ECFDF5 0%, #F8FAFC 45%, #F1F5F9 100%);
+        color: #0F172A;
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     
     /* Headers & Typography */
     h1, h2, h3, h4, h5, h6 {
-        color: #FFFFFF !important;
-        font-weight: 700;
+        color: #064E3B !important;
+        font-weight: 800;
         letter-spacing: -0.025em;
+    }
+
+    p, span, label, div {
+        color: #1E293B;
     }
 
     code, pre {
@@ -68,33 +73,31 @@ CUSTOM_CSS = """
     
     /* Top Navbar Header */
     .platform-header {
-        background: linear-gradient(135deg, rgba(26, 38, 66, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(56, 189, 248, 0.28);
+        background: linear-gradient(135deg, #FFFFFF 0%, #F0FDF4 100%);
+        border: 1.5px solid rgba(16, 185, 129, 0.35);
         border-radius: 14px;
         padding: 22px 28px;
         margin-bottom: 24px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        box-shadow: 0 12px 35px -5px rgba(0, 0, 0, 0.65), 0 0 20px 0 rgba(56, 189, 248, 0.1);
+        box-shadow: 0 10px 30px -5px rgba(16, 185, 129, 0.14), 0 2px 6px rgba(0, 0, 0, 0.04);
     }
     .platform-title {
         font-size: 1.75rem;
         font-weight: 800;
-        color: #FFFFFF;
+        color: #064E3B;
         letter-spacing: -0.025em;
         margin: 0;
-        background: linear-gradient(90deg, #FFFFFF 0%, #E2E8F0 60%, #38BDF8 100%);
+        background: linear-gradient(90deg, #064E3B 0%, #047857 50%, #059669 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
     .platform-subtitle {
         font-size: 0.9rem;
-        color: #94A3B8;
+        color: #475569;
         margin-top: 5px;
-        font-weight: 500;
+        font-weight: 600;
     }
 
     /* Live Pulsing Operational Dot */
@@ -116,12 +119,11 @@ CUSTOM_CSS = """
     
     /* Metrics / KPI Cards */
     .kpi-card {
-        background: linear-gradient(180deg, rgba(19, 27, 46, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(56, 189, 248, 0.2);
+        background: #FFFFFF;
+        border: 1.5px solid rgba(16, 185, 129, 0.25);
         border-radius: 12px;
         padding: 20px 24px;
-        box-shadow: 0 8px 25px -4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
         transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         position: relative;
         overflow: hidden;
@@ -132,42 +134,41 @@ CUSTOM_CSS = """
         top: 0;
         left: 0;
         right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #38BDF8, #818CF8);
-        opacity: 0.8;
+        height: 4px;
+        background: linear-gradient(90deg, #10B981, #059669);
     }
     .kpi-card:hover {
         transform: translateY(-4px);
-        border-color: rgba(56, 189, 248, 0.5);
-        box-shadow: 0 14px 30px -4px rgba(0, 0, 0, 0.65), 0 0 20px rgba(56, 189, 248, 0.2);
+        border-color: rgba(16, 185, 129, 0.6);
+        box-shadow: 0 12px 28px -4px rgba(16, 185, 129, 0.2);
     }
     .kpi-label {
         font-size: 0.78rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: #94A3B8;
+        color: #047857;
         margin-bottom: 8px;
     }
     .kpi-value {
         font-size: 2.05rem;
         font-weight: 800;
-        color: #F8FAFC;
+        color: #0F172A;
         line-height: 1.15;
         font-family: 'JetBrains Mono', monospace;
     }
     .kpi-sub {
         font-size: 0.84rem;
-        color: #38BDF8;
+        color: #059669;
         margin-top: 8px;
         font-weight: 600;
     }
 
     /* Decision Badges */
     .badge-auto-approve {
-        background: rgba(16, 185, 129, 0.16);
-        color: #10B981;
-        border: 1px solid rgba(16, 185, 129, 0.45);
+        background: #ECFDF5;
+        color: #047857;
+        border: 1.5px solid #10B981;
         padding: 6px 14px;
         border-radius: 8px;
         font-weight: 700;
@@ -175,12 +176,12 @@ CUSTOM_CSS = """
         display: inline-flex;
         align-items: center;
         letter-spacing: 0.03em;
-        box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2);
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
     }
     .badge-manual-review {
-        background: rgba(245, 158, 11, 0.16);
-        color: #F59E0B;
-        border: 1px solid rgba(245, 158, 11, 0.45);
+        background: #FFFBEB;
+        color: #B45309;
+        border: 1.5px solid #F59E0B;
         padding: 6px 14px;
         border-radius: 8px;
         font-weight: 700;
@@ -188,12 +189,12 @@ CUSTOM_CSS = """
         display: inline-flex;
         align-items: center;
         letter-spacing: 0.03em;
-        box-shadow: 0 2px 10px rgba(245, 158, 11, 0.2);
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
     }
     .badge-decline {
-        background: rgba(239, 68, 68, 0.16);
-        color: #EF4444;
-        border: 1px solid rgba(239, 68, 68, 0.45);
+        background: #FEF2F2;
+        color: #B91C1C;
+        border: 1.5px solid #EF4444;
         padding: 6px 14px;
         border-radius: 8px;
         font-weight: 700;
@@ -201,33 +202,33 @@ CUSTOM_CSS = """
         display: inline-flex;
         align-items: center;
         letter-spacing: 0.03em;
-        box-shadow: 0 2px 10px rgba(239, 68, 68, 0.2);
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
     }
     .badge-latency {
-        background: rgba(14, 165, 233, 0.14);
-        color: #38BDF8;
-        border: 1px solid rgba(14, 165, 233, 0.4);
+        background: #ECFDF5;
+        color: #065F46;
+        border: 1.5px solid #34D399;
         padding: 6px 14px;
         border-radius: 8px;
         font-size: 0.84rem;
         font-weight: 700;
         font-family: 'JetBrains Mono', monospace;
         display: inline-block;
-        box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12);
     }
 
     /* Tabs Styling */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
-        background-color: rgba(14, 21, 36, 0.8);
-        backdrop-filter: blur(12px);
+        background-color: #FFFFFF;
+        border: 1.5px solid rgba(16, 185, 129, 0.25);
         padding: 8px;
         border-radius: 12px;
-        border: 1px solid rgba(51, 65, 85, 0.6);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
     }
     .stTabs [data-baseweb="tab"] {
         background-color: transparent;
-        color: #94A3B8;
+        color: #475569;
         border-radius: 8px;
         font-weight: 700;
         font-size: 0.88rem;
@@ -236,52 +237,52 @@ CUSTOM_CSS = """
         letter-spacing: 0.02em;
     }
     .stTabs [data-baseweb="tab"]:hover {
-        color: #FFFFFF;
-        background-color: rgba(255, 255, 255, 0.05);
+        color: #047857;
+        background-color: #ECFDF5;
     }
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #1E293B 0%, #131B2E 100%) !important;
-        color: #38BDF8 !important;
-        border: 1px solid rgba(56, 189, 248, 0.4) !important;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), 0 0 12px rgba(56, 189, 248, 0.15);
+        background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+        color: #FFFFFF !important;
+        border: 1px solid #047857 !important;
+        box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
     }
 
     /* Underwriter Summary Card */
     .narrative-card {
-        background: linear-gradient(180deg, #131B2E 0%, #0F172A 100%);
-        border: 1px solid rgba(56, 189, 248, 0.3);
-        border-left: 4px solid #38BDF8;
+        background: #FFFFFF;
+        border: 1.5px solid rgba(16, 185, 129, 0.3);
+        border-left: 4px solid #10B981;
         border-radius: 10px;
         padding: 20px 24px;
         margin-top: 14px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 4px 16px rgba(16, 185, 129, 0.08);
     }
 
     /* Telemetry Sidebar Card */
     .sidebar-telemetry {
-        background: linear-gradient(180deg, #0E1524 0%, #090E1A 100%);
-        border: 1px solid rgba(51, 65, 85, 0.7);
+        background: #FFFFFF;
+        border: 1.5px solid rgba(16, 185, 129, 0.25);
         border-radius: 10px;
         padding: 16px;
         margin-bottom: 18px;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
     }
 
-    /* Conversational Chat Bubbles (Left & Right Like Image) */
+    /* Conversational Chat Bubbles (Left & Right) */
     .chat-row-user {
         display: flex;
         justify-content: flex-end;
         margin: 16px 0 12px 0;
     }
     .chat-bubble-user {
-        background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
         color: #FFFFFF;
         border-radius: 22px 22px 4px 22px;
         padding: 14px 22px;
         font-size: 0.96rem;
         font-weight: 600;
         max-width: 74%;
-        box-shadow: 0 6px 18px rgba(109, 40, 217, 0.4);
+        box-shadow: 0 4px 16px rgba(5, 150, 105, 0.3);
         word-break: break-word;
         letter-spacing: -0.01em;
     }
@@ -296,7 +297,7 @@ CUSTOM_CSS = """
         width: 42px;
         height: 42px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #0EA5E9 0%, #6366F1 100%);
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -304,8 +305,8 @@ CUSTOM_CSS = """
         font-weight: 800;
         font-size: 0.88rem;
         flex-shrink: 0;
-        box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
-        border: 2px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+        border: 2px solid rgba(255, 255, 255, 0.8);
     }
     .chat-bot-content {
         max-width: 86%;
@@ -313,25 +314,25 @@ CUSTOM_CSS = """
     .chat-bot-label {
         font-size: 0.8rem;
         font-weight: 700;
-        color: #94A3B8;
+        color: #047857;
         margin-bottom: 6px;
         letter-spacing: 0.04em;
     }
     .chat-bubble-bot {
-        background: linear-gradient(180deg, #131B2E 0%, #0F172A 100%);
-        border: 1px solid rgba(56, 189, 248, 0.28);
+        background: #FFFFFF;
+        border: 1.5px solid rgba(16, 185, 129, 0.28);
         border-radius: 4px 22px 22px 22px;
         padding: 18px 24px;
-        color: #F1F5F9;
+        color: #1E293B;
         font-size: 0.96rem;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 4px 18px rgba(16, 185, 129, 0.08);
         line-height: 1.55;
     }
     .chat-quick-pill {
         display: inline-block;
-        border: 1.5px solid #8B5CF6;
-        color: #C084FC;
-        background: rgba(139, 92, 246, 0.12);
+        border: 1.5px solid #10B981;
+        color: #065F46;
+        background: #ECFDF5;
         border-radius: 20px;
         padding: 7px 18px;
         margin: 4px 6px 4px 0;
@@ -409,30 +410,30 @@ with tab1:
     
     # Model ROC-AUC & Benchmark Banner
     st.markdown("""
-    <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);">
+    <div style="background: linear-gradient(135deg, #FFFFFF 0%, #F0FDF4 100%); border: 1.5px solid rgba(16, 185, 129, 0.35); border-radius: 12px; padding: 18px 24px; margin-bottom: 22px; box-shadow: 0 4px 18px rgba(16, 185, 129, 0.1);">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
             <div>
-                <div style="font-size: 0.75rem; font-weight: 700; color: #38BDF8; letter-spacing: 0.08em; text-transform: uppercase;">Validated Model Performance Benchmark (Stratified 5-Fold CV)</div>
-                <div style="font-size: 1.25rem; font-weight: 800; color: #FFFFFF; margin-top: 2px;">
-                    Champion LightGBM GBDT: <span style="color: #10B981; font-family: 'JetBrains Mono';">0.7665 OOF ROC-AUC</span> <span style="font-size: 0.9rem; color: #94A3B8;">(0.8130 Full AUC)</span>
+                <div style="font-size: 0.76rem; font-weight: 700; color: #047857; letter-spacing: 0.08em; text-transform: uppercase;">Validated Model Performance Benchmark (Stratified 5-Fold CV)</div>
+                <div style="font-size: 1.3rem; font-weight: 800; color: #064E3B; margin-top: 3px;">
+                    Champion LightGBM GBDT: <span style="color: #059669; font-family: 'JetBrains Mono';">0.7665 OOF ROC-AUC</span> <span style="font-size: 0.92rem; color: #64748B;">(0.8130 Full AUC)</span>
                 </div>
             </div>
-            <div style="display: flex; gap: 16px; align-items: center;">
+            <div style="display: flex; gap: 18px; align-items: center;">
                 <div style="text-align: right;">
-                    <div style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase;">Baseline LR AUC</div>
-                    <div style="font-size: 1.05rem; font-weight: 700; color: #F8FAFC; font-family: 'JetBrains Mono';">0.7475</div>
+                    <div style="font-size: 0.72rem; color: #64748B; font-weight: 600; text-transform: uppercase;">Baseline LR AUC</div>
+                    <div style="font-size: 1.05rem; font-weight: 700; color: #0F172A; font-family: 'JetBrains Mono';">0.7475</div>
                 </div>
-                <div style="text-align: right; border-left: 1px solid #334155; padding-left: 16px;">
-                    <div style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase;">PR-AUC Score</div>
-                    <div style="font-size: 1.05rem; font-weight: 700; color: #38BDF8; font-family: 'JetBrains Mono';">0.2520 <span style="font-size: 0.75rem; color: #10B981;">(3.1x Lift)</span></div>
+                <div style="text-align: right; border-left: 1.5px solid #E2E8F0; padding-left: 18px;">
+                    <div style="font-size: 0.72rem; color: #64748B; font-weight: 600; text-transform: uppercase;">PR-AUC Score</div>
+                    <div style="font-size: 1.05rem; font-weight: 700; color: #047857; font-family: 'JetBrains Mono';">0.2520 <span style="font-size: 0.75rem; color: #059669;">(3.1x Lift)</span></div>
                 </div>
-                <div style="text-align: right; border-left: 1px solid #334155; padding-left: 16px;">
-                    <div style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase;">Defaulter Recall</div>
-                    <div style="font-size: 1.05rem; font-weight: 700; color: #10B981; font-family: 'JetBrains Mono';">67.4% <span style="font-size: 0.75rem; color: #94A3B8;">(16.7k / 24.8k)</span></div>
+                <div style="text-align: right; border-left: 1.5px solid #E2E8F0; padding-left: 18px;">
+                    <div style="font-size: 0.72rem; color: #64748B; font-weight: 600; text-transform: uppercase;">Defaulter Recall</div>
+                    <div style="font-size: 1.05rem; font-weight: 700; color: #059669; font-family: 'JetBrains Mono';">67.4% <span style="font-size: 0.75rem; color: #64748B;">(16.7k / 24.8k)</span></div>
                 </div>
-                <div style="text-align: right; border-left: 1px solid #334155; padding-left: 16px;">
-                    <div style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase;">Expected Savings</div>
-                    <div style="font-size: 1.05rem; font-weight: 800; color: #10B981; font-family: 'JetBrains Mono';">+$8,712,000</div>
+                <div style="text-align: right; border-left: 1.5px solid #E2E8F0; padding-left: 18px;">
+                    <div style="font-size: 0.72rem; color: #64748B; font-weight: 600; text-transform: uppercase;">Expected Savings</div>
+                    <div style="font-size: 1.05rem; font-weight: 800; color: #047857; font-family: 'JetBrains Mono';">+$8,712,000</div>
                 </div>
             </div>
         </div>
@@ -457,7 +458,7 @@ with tab1:
             st.markdown(f"""
             <div class="kpi-card">
                 <div class="kpi-label">Portfolio Default Rate</div>
-                <div class="kpi-value" style="color: #F87171;">{summary['overall_default_rate_pct']}%</div>
+                <div class="kpi-value" style="color: #DC2626;">{summary['overall_default_rate_pct']}%</div>
                 <div class="kpi-sub">{summary['total_defaulters']:,} Empirical Defaulters</div>
             </div>
             """, unsafe_allow_html=True)
@@ -513,9 +514,9 @@ with tab1:
             labels={"income_bracket": "Income Quintile", "default_rate_pct": "Default Rate (%)"}
         )
         fig_inc.update_layout(
-            template="plotly_dark",
-            plot_bgcolor="rgba(19, 27, 46, 0.8)",
-            paper_bgcolor="rgba(19, 27, 46, 0.8)",
+            template="plotly_white",
+            plot_bgcolor="rgba(255, 255, 255, 0)",
+            paper_bgcolor="rgba(255, 255, 255, 0)",
             margin=dict(l=20, r=20, t=30, b=20),
             coloraxis_showscale=False
         )
@@ -540,11 +541,11 @@ with tab1:
             line_shape="spline",
             labels={"bureau_rating_bucket": "Composite Bureau Rating (0.0 to 1.0)", "default_rate_pct": "Default Rate (%)"}
         )
-        fig_ext.update_traces(line_color="#00E5FF", line_width=3, marker=dict(size=8, color="#38BDF8"))
+        fig_ext.update_traces(line_color="#059669", line_width=3, marker=dict(size=8, color="#10B981"))
         fig_ext.update_layout(
-            template="plotly_dark",
-            plot_bgcolor="rgba(19, 27, 46, 0.8)",
-            paper_bgcolor="rgba(19, 27, 46, 0.8)",
+            template="plotly_white",
+            plot_bgcolor="rgba(255, 255, 255, 0)",
+            paper_bgcolor="rgba(255, 255, 255, 0)",
             margin=dict(l=20, r=20, t=30, b=20)
         )
         st.plotly_chart(fig_ext, use_container_width=True)
@@ -578,9 +579,9 @@ with tab1:
             labels={"age_cohort": "Age Cohort", "default_rate_pct": "Default Rate (%)"}
         )
         fig_age.update_layout(
-            template="plotly_dark",
-            plot_bgcolor="rgba(19, 27, 46, 0.8)",
-            paper_bgcolor="rgba(19, 27, 46, 0.8)",
+            template="plotly_white",
+            plot_bgcolor="rgba(255, 255, 255, 0)",
+            paper_bgcolor="rgba(255, 255, 255, 0)",
             margin=dict(l=20, r=20, t=30, b=20),
             coloraxis_showscale=False
         )
@@ -613,9 +614,9 @@ with tab1:
             labels={"dti_tier": "Debt-to-Income Tier", "default_rate_pct": "Default Rate (%)"}
         )
         fig_dti.update_layout(
-            template="plotly_dark",
-            plot_bgcolor="rgba(19, 27, 46, 0.8)",
-            paper_bgcolor="rgba(19, 27, 46, 0.8)",
+            template="plotly_white",
+            plot_bgcolor="rgba(255, 255, 255, 0)",
+            paper_bgcolor="rgba(255, 255, 255, 0)",
             margin=dict(l=20, r=20, t=30, b=20),
             coloraxis_showscale=False
         )
@@ -647,9 +648,9 @@ with tab1:
         labels={"occupation": "Occupation Type", "default_rate_pct": "Default Rate (%)"}
     )
     fig_occ.update_layout(
-        template="plotly_dark",
-        plot_bgcolor="rgba(19, 27, 46, 0.8)",
-        paper_bgcolor="rgba(19, 27, 46, 0.8)",
+        template="plotly_white",
+        plot_bgcolor="rgba(255, 255, 255, 0)",
+        paper_bgcolor="rgba(255, 255, 255, 0)",
         height=450,
         margin=dict(l=20, r=20, t=30, b=20),
         coloraxis_showscale=False
@@ -830,30 +831,30 @@ with tab2:
             mode="gauge+number",
             value=score,
             domain={'x': [0, 1], 'y': [0, 1]},
-            title={'text': f"FICO-Scaled Credit Score: {score} / 850", 'font': {'size': 18, 'color': '#FFFFFF', 'family': 'Plus Jakarta Sans'}},
+            title={'text': f"FICO-Scaled Credit Score: {score} / 850", 'font': {'size': 18, 'color': '#064E3B', 'family': 'Plus Jakarta Sans'}},
             number={'font': {'size': 38, 'color': color, 'family': 'JetBrains Mono'}},
             gauge={
-                'axis': {'range': [300, 850], 'tickwidth': 1, 'tickcolor': "#94A3B8"},
+                'axis': {'range': [300, 850], 'tickwidth': 1, 'tickcolor': "#64748B"},
                 'bar': {'color': color, 'thickness': 0.28},
-                'bgcolor': "#131B2E",
-                'borderwidth': 1,
-                'bordercolor': "#334155",
+                'bgcolor': "#FFFFFF",
+                'borderwidth': 1.5,
+                'bordercolor': "rgba(16, 185, 129, 0.3)",
                 'steps': [
-                    {'range': [300, 600], 'color': 'rgba(239, 68, 68, 0.22)'},
-                    {'range': [600, 750], 'color': 'rgba(245, 158, 11, 0.22)'},
-                    {'range': [750, 850], 'color': 'rgba(16, 185, 129, 0.22)'}
+                    {'range': [300, 600], 'color': 'rgba(239, 68, 68, 0.15)'},
+                    {'range': [600, 750], 'color': 'rgba(245, 158, 11, 0.15)'},
+                    {'range': [750, 850], 'color': 'rgba(16, 185, 129, 0.15)'}
                 ],
                 'threshold': {
-                    'line': {'color': "#FFFFFF", 'width': 3},
+                    'line': {'color': "#064E3B", 'width': 3},
                     'thickness': 0.8,
                     'value': score
                 }
             }
         ))
         fig_gauge.update_layout(
-            template="plotly_dark",
-            plot_bgcolor="rgba(19, 27, 46, 0.8)",
-            paper_bgcolor="rgba(19, 27, 46, 0.8)",
+            template="plotly_white",
+            plot_bgcolor="rgba(255, 255, 255, 0)",
+            paper_bgcolor="rgba(255, 255, 255, 0)",
             height=250,
             margin=dict(l=20, r=20, t=30, b=10)
         )
@@ -873,16 +874,16 @@ with tab2:
         comp_bureau = round((ext_1 + ext_2 + ext_3) / 3.0, 2)
 
         st.markdown(f"""
-        <div style="background: linear-gradient(180deg, #131B2E 0%, #0F172A 100%); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; padding: 18px 20px; margin-top: 10px;">
+        <div style="background: #FFFFFF; border: 1.5px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 18px 22px; margin-top: 10px; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.08);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <span class="{badge_class}">{badge_text}</span>
-                <span style="font-size: 0.92rem; color: #94A3B8;">Predicted Default Probability: <b style="color: #F8FAFC; font-family: 'JetBrains Mono';">{prob_pct}%</b></span>
+                <span style="font-size: 0.92rem; color: #475569; font-weight: 600;">Predicted Default Probability: <b style="color: #0F172A; font-family: 'JetBrains Mono';">{prob_pct}%</b></span>
             </div>
-            <div style="font-size: 0.95rem; color: #E2E8F0; line-height: 1.5; margin-bottom: 14px;">{recommendation}</div>
-            <div style="display: flex; gap: 12px; border-top: 1px solid #334155; padding-top: 12px; font-size: 0.82rem; color: #94A3B8;">
-                <div>DTI Ratio: <b style="color: {'#EF4444' if dti_pct > 30 else '#10B981'}; font-family: 'JetBrains Mono';">{dti_pct}%</b></div>
-                <div>Credit/Income: <b style="color: #F8FAFC; font-family: 'JetBrains Mono';">{loan_inc_ratio}x</b></div>
-                <div>Composite Bureau: <b style="color: #38BDF8; font-family: 'JetBrains Mono';">{comp_bureau}</b></div>
+            <div style="font-size: 0.96rem; color: #1E293B; line-height: 1.55; margin-bottom: 14px; font-weight: 500;">{recommendation}</div>
+            <div style="display: flex; gap: 16px; border-top: 1.5px solid #E2E8F0; padding-top: 12px; font-size: 0.84rem; color: #64748B;">
+                <div>DTI Ratio: <b style="color: {'#DC2626' if dti_pct > 30 else '#059669'}; font-family: 'JetBrains Mono';">{dti_pct}%</b></div>
+                <div>Credit/Income: <b style="color: #0F172A; font-family: 'JetBrains Mono';">{loan_inc_ratio}x</b></div>
+                <div>Composite Bureau: <b style="color: #047857; font-family: 'JetBrains Mono';">{comp_bureau}</b></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -915,9 +916,9 @@ with tab2:
                 labels={"shap_value": "SHAP Impact on Default Log-Odds (Red = Risk Driver, Green = Safety Driver)", "display_name": "Risk Feature"}
             )
             fig_shap.update_layout(
-                template="plotly_dark",
-                plot_bgcolor="rgba(19, 27, 46, 0.8)",
-                paper_bgcolor="rgba(19, 27, 46, 0.8)",
+                template="plotly_white",
+                plot_bgcolor="rgba(255, 255, 255, 0)",
+                paper_bgcolor="rgba(255, 255, 255, 0)",
                 height=380,
                 margin=dict(l=20, r=20, t=20, b=20),
                 yaxis={'categoryorder':'total ascending'}
@@ -932,9 +933,9 @@ with tab2:
             for b in bullets:
                 clean_b = b.replace("**", "<b>").replace("**", "</b>")
                 if clean_b.startswith("•"):
-                    memo_html += f"<div style='margin-bottom: 8px; font-size: 0.88rem; color: #CBD5E1; line-height: 1.4;'>{clean_b}</div>"
+                    memo_html += f"<div style='margin-bottom: 8px; font-size: 0.88rem; color: #334155; line-height: 1.45;'>{clean_b}</div>"
                 else:
-                    memo_html += f"<div style='margin-top: 10px; margin-bottom: 6px; font-size: 0.95rem; font-weight: 700; color: #38BDF8;'>{clean_b}</div>"
+                    memo_html += f"<div style='margin-top: 10px; margin-bottom: 6px; font-size: 0.95rem; font-weight: 700; color: #047857;'>{clean_b}</div>"
             memo_html += "</div>"
             
             st.markdown(memo_html, unsafe_allow_html=True)
@@ -1081,7 +1082,7 @@ with tab4:
                 <div class="chat-row-bot">
                     <div class="chat-bot-avatar">AI</div>
                     <div class="chat-bot-content">
-                        <div class="chat-bot-label">CreditBot &bull; <span style="color: #38BDF8; font-family: 'JetBrains Mono'; font-size: 0.75rem;">DuckDB OLAP</span></div>
+                        <div class="chat-bot-label">CreditBot &bull; <span style="color: #059669; font-family: 'JetBrains Mono'; font-size: 0.76rem; font-weight: 700;">DuckDB OLAP</span></div>
                         <div class="chat-bubble-bot">
                             {msg['content']}
                         </div>
@@ -1113,8 +1114,8 @@ with tab4:
                         st.markdown(f"""
                         <div style="margin-left: 50px; margin-bottom: 8px;">
                             <span class="badge-latency">{msg.get('latency_badge', 'Executed in <25ms')}</span>
-                            <span style="font-size: 0.8rem; color: #94A3B8; margin-left: 8px;">Rows: <b style="color: #F8FAFC; font-family: 'JetBrains Mono';">{msg.get('row_count', 0)}</b></span>
-                            <span style="font-size: 0.78rem; color: #10B981; font-weight: 700; margin-left: 8px;">[AST: SELECT ONLY]</span>
+                            <span style="font-size: 0.82rem; color: #64748B; margin-left: 8px;">Rows: <b style="color: #0F172A; font-family: 'JetBrains Mono';">{msg.get('row_count', 0)}</b></span>
+                            <span style="font-size: 0.78rem; color: #059669; font-weight: 700; margin-left: 8px;">[AST: SELECT ONLY]</span>
                         </div>
                         """, unsafe_allow_html=True)
 
@@ -1151,13 +1152,13 @@ with tab4:
                                             df_res, x=first_col, y=target_col,
                                             text=target_col,
                                             color=target_col,
-                                            color_continuous_scale="Blues",
+                                            color_continuous_scale="Greens",
                                             labels={first_col: first_col.replace("_", " ").title(), target_col: target_col.replace("_", " ").title()}
                                         )
                                         fig_chat.update_layout(
-                                            template="plotly_dark",
-                                            plot_bgcolor="rgba(19, 27, 46, 0.8)",
-                                            paper_bgcolor="rgba(19, 27, 46, 0.8)",
+                                            template="plotly_white",
+                                            plot_bgcolor="rgba(255, 255, 255, 0)",
+                                            paper_bgcolor="rgba(255, 255, 255, 0)",
                                             height=260,
                                             margin=dict(l=10, r=10, t=20, b=10),
                                             coloraxis_showscale=False
@@ -1229,20 +1230,20 @@ with st.sidebar:
     health = get_system_health()
     st.markdown(f"""
     <div class="sidebar-telemetry">
-        <div style="font-size: 0.8rem; color: #94A3B8; margin-bottom: 4px;">HOST PLATFORM</div>
-        <div style="font-weight: 700; font-size: 0.95rem; color: #FFFFFF; font-family: 'JetBrains Mono';">{health['platform']} (Python {health['python_version']})</div>
-        <hr style="border: none; border-top: 1px solid #334155; margin: 8px 0;" />
-        <div style="display: flex; justify-content: space-between; font-size: 0.82rem; color: #94A3B8;">
+        <div style="font-size: 0.78rem; font-weight: 700; color: #047857; margin-bottom: 4px; text-transform: uppercase;">HOST PLATFORM</div>
+        <div style="font-weight: 700; font-size: 0.95rem; color: #0F172A; font-family: 'JetBrains Mono';">{health['platform']} (Python {health['python_version']})</div>
+        <hr style="border: none; border-top: 1.5px solid #E2E8F0; margin: 8px 0;" />
+        <div style="display: flex; justify-content: space-between; font-size: 0.84rem; color: #475569;">
             <span>CPU Usage:</span>
-            <span style="color: #38BDF8; font-family: 'JetBrains Mono';">{health['cpu_usage_pct']}%</span>
+            <span style="color: #059669; font-weight: 700; font-family: 'JetBrains Mono';">{health['cpu_usage_pct']}%</span>
         </div>
-        <div style="display: flex; justify-content: space-between; font-size: 0.82rem; color: #94A3B8;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.84rem; color: #475569;">
             <span>Memory Active:</span>
-            <span style="color: #38BDF8; font-family: 'JetBrains Mono';">{health['memory_used_mb']} MB</span>
+            <span style="color: #059669; font-weight: 700; font-family: 'JetBrains Mono';">{health['memory_used_mb']} MB</span>
         </div>
-        <div style="display: flex; justify-content: space-between; font-size: 0.82rem; color: #94A3B8;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.84rem; color: #475569;">
             <span>Storage Free:</span>
-            <span style="color: #38BDF8; font-family: 'JetBrains Mono';">{health['disk_free_gb']} GB</span>
+            <span style="color: #059669; font-weight: 700; font-family: 'JetBrains Mono';">{health['disk_free_gb']} GB</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
