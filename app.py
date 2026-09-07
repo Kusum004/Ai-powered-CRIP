@@ -229,6 +229,78 @@ CUSTOM_CSS = """
         padding: 14px;
         margin-bottom: 16px;
     }
+
+    /* Conversational Chat Bubbles (Left & Right Like Image) */
+    .chat-row-user {
+        display: flex;
+        justify-content: flex-end;
+        margin: 14px 0 10px 0;
+    }
+    .chat-bubble-user {
+        background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+        color: #FFFFFF;
+        border-radius: 20px 20px 4px 20px;
+        padding: 12px 20px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        max-width: 72%;
+        box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+        word-break: break-word;
+        letter-spacing: -0.01em;
+    }
+    .chat-row-bot {
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-start;
+        gap: 12px;
+        margin: 14px 0;
+    }
+    .chat-bot-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #FFFFFF;
+        font-weight: 800;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 10px rgba(99, 102, 241, 0.35);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    .chat-bot-content {
+        max-width: 86%;
+    }
+    .chat-bot-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #94A3B8;
+        margin-bottom: 4px;
+        letter-spacing: 0.04em;
+    }
+    .chat-bubble-bot {
+        background: #131B2E;
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        border-radius: 4px 20px 20px 20px;
+        padding: 16px 22px;
+        color: #F1F5F9;
+        font-size: 0.95rem;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+        line-height: 1.5;
+    }
+    .chat-quick-pill {
+        display: inline-block;
+        border: 1.5px solid #8B5CF6;
+        color: #C084FC;
+        background: rgba(139, 92, 246, 0.1);
+        border-radius: 20px;
+        padding: 6px 16px;
+        margin: 4px 6px 4px 0;
+        font-size: 0.88rem;
+        font-weight: 600;
+    }
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
@@ -877,193 +949,195 @@ with tab3:
         st.info("Applicant falls within standard baseline underwriting bounds.")
 
 # ==============================================================================
-# TAB 4: TALK-TO-DATA AI CONVERSATIONAL COPILOT (SPLIT LEFT/RIGHT COCKPIT)
+# TAB 4: TALK-TO-DATA AI CONVERSATIONAL COPILOT (LEFT & RIGHT MESSAGING CHAT)
 # ==============================================================================
 with tab4:
+    st.markdown("### Talk-to-Data Conversational AI Copilot")
+    st.markdown("Interactive multi-turn analytical assistant across all **307,511 loan applications**. Ask questions or click quick reply pills; bot answers on the left, your inquiries appear on the right.")
+
     # Initialize Chat History in Session State
-    if "chat_messages" not in st.session_state:
-        st.session_state.chat_messages = []
-    if "last_query_result" not in st.session_state:
-        st.session_state.last_query_result = None
+    if "chat_messages" not in st.session_state or len(st.session_state.chat_messages) == 0:
+        st.session_state.chat_messages = [
+            {
+                "role": "bot",
+                "content": "Hello! I am your Credit Risk Intelligence Copilot. What would you like to analyze across our 307,511 loan applications today?",
+                "show_pills": True,
+                "sql": None,
+                "data": None,
+                "executive_summary": None,
+                "latency_badge": "Connected",
+                "row_count": 307511
+            }
+        ]
 
-    col_ask, col_answer = st.columns([1, 1.3], gap="large")
+    # Top Control Bar (Clear Thread)
+    c_top_l, c_top_r = st.columns([5, 1])
+    with c_top_r:
+        if st.button("Clear Conversation", use_container_width=True, key="clear_chat_thread_btn"):
+            st.session_state.chat_messages = []
+            st.rerun()
 
-    # --------------------------------------------------------------------------
-    # LEFT COLUMN: ASK QUESTIONS ABOUT LOANS (INPUT & DIALOGUE CONTROLS)
-    # --------------------------------------------------------------------------
-    with col_ask:
-        st.markdown("### Ask Questions About Loans")
-        st.markdown("Query the **307,511 loan applications** in natural language. Ask initial portfolio questions or follow-up drill-downs.")
+    # Quick Pill Button Action Handler
+    quick_pill_prompt = None
 
-        # Quick Suggested Inquiries (2x2 Grid)
-        st.markdown("#### Suggested Financial Inquiries:")
-        sq_col1, sq_col2 = st.columns(2)
-        
-        quick_query = None
-        with sq_col1:
-            if st.button("Default rate by income bracket", use_container_width=True, key="sq_btn_1"):
-                quick_query = "What is the default rate across different annual income brackets (<$50k, $50k-$100k, >$100k)?"
-            if st.button("Car owners vs Non-car owners", use_container_width=True, key="sq_btn_2"):
-                quick_query = "Compare default rate and loan amount between car owners and non-car owners."
-        with sq_col2:
-            if st.button("Top 5 highest risk occupations", use_container_width=True, key="sq_btn_3"):
-                quick_query = "Show top 5 highest risk occupations with at least 500 applicants."
-            if st.button("Risk across age cohorts", use_container_width=True, key="sq_btn_4"):
-                quick_query = "What is the risk profile across age cohorts (under 30, 30s, 40s, 50s, 60+)?"
+    # Chat Container
+    chat_box = st.container()
+    with chat_box:
+        for idx, msg in enumerate(st.session_state.chat_messages):
+            if msg["role"] == "user":
+                # USER MESSAGE BUBBLE ON THE RIGHT (PURPLE)
+                st.markdown(f"""
+                <div class="chat-row-user">
+                    <div class="chat-bubble-user">
+                        {msg['content']}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                # BOT MESSAGE ON THE LEFT
+                st.markdown(f"""
+                <div class="chat-row-bot">
+                    <div class="chat-bot-avatar">AI</div>
+                    <div class="chat-bot-content">
+                        <div class="chat-bot-label">CreditBot &bull; <span style="color: #38BDF8; font-family: 'JetBrains Mono'; font-size: 0.75rem;">DuckDB OLAP</span></div>
+                        <div class="chat-bubble-bot">
+                            {msg['content']}
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
 
-        # Question Input Area
-        st.markdown("<br>", unsafe_allow_html=True)
-        user_input_val = quick_query or ""
-        
-        query_text = st.text_area(
-            "Enter your loan inquiry or follow-up statement:",
-            value=user_input_val,
-            placeholder="e.g. Show default rate by education level and average credit amount...\nor follow-up: Filter that query for borrowers over 40...",
-            height=110,
-            key="nl_query_input"
-        )
+                # Show Interactive Quick Suggestion Pills if enabled on this bot message
+                if msg.get("show_pills"):
+                    p_c1, p_c2, p_c3, p_c4 = st.columns(4)
+                    with p_c1:
+                        if st.button("Income Brackets Risk", key=f"pill_1_{idx}", use_container_width=True):
+                            quick_pill_prompt = "What is the default rate across different annual income brackets (<$50k, $50k-$100k, >$100k)?"
+                    with p_c2:
+                        if st.button("Occupation Risk Ranking", key=f"pill_2_{idx}", use_container_width=True):
+                            quick_pill_prompt = "Show top 5 highest risk occupations with at least 500 applicants."
+                    with p_c3:
+                        if st.button("Car vs Non-Car Owners", key=f"pill_3_{idx}", use_container_width=True):
+                            quick_pill_prompt = "Compare default rate and loan amount between car owners and non-car owners."
+                    with p_c4:
+                        if st.button("Risk by Age Cohorts", key=f"pill_4_{idx}", use_container_width=True):
+                            quick_pill_prompt = "What is the risk profile across age cohorts (under 30, 30s, 40s, 50s, 60+)?"
 
-        btn_c1, btn_c2 = st.columns([1.5, 1])
-        with btn_c1:
-            run_query_btn = st.button("Execute Intelligence Query", type="primary", use_container_width=True, key="run_nl_btn")
-        with btn_c2:
-            if st.button("Clear Thread", use_container_width=True, key="clear_nl_btn"):
-                st.session_state.chat_messages = []
-                st.session_state.last_query_result = None
-                st.rerun()
+                # Rich Answer Components (Telemetry, Synthesis, Table, Chart, SQL)
+                if msg.get("sql"):
+                    bot_data_container = st.container()
+                    with bot_data_container:
+                        # Telemetry Pill & Badge
+                        st.markdown(f"""
+                        <div style="margin-left: 50px; margin-bottom: 8px;">
+                            <span class="badge-latency">{msg.get('latency_badge', 'Executed in <25ms')}</span>
+                            <span style="font-size: 0.8rem; color: #94A3B8; margin-left: 8px;">Rows: <b style="color: #F8FAFC; font-family: 'JetBrains Mono';">{msg.get('row_count', 0)}</b></span>
+                            <span style="font-size: 0.78rem; color: #10B981; font-weight: 700; margin-left: 8px;">[AST: SELECT ONLY]</span>
+                        </div>
+                        """, unsafe_allow_html=True)
 
-        # Execute Query Logic
-        if run_query_btn and query_text.strip():
-            active_q = query_text.strip()
-            # Append to history
-            st.session_state.chat_messages.append({"role": "user", "content": active_q})
+                        # Executive Synthesis Card
+                        if msg.get("executive_summary"):
+                            st.markdown("<div style='margin-left: 50px;' class='narrative-card'>", unsafe_allow_html=True)
+                            for bullet in msg["executive_summary"]:
+                                st.markdown(f"- {bullet}")
+                            st.markdown("</div>", unsafe_allow_html=True)
 
-            with st.spinner("Analyzing inquiry and executing in-memory DuckDB query..."):
-                history_context = [
-                    {"question": m.get("content", ""), "sql": m.get("sql", "")}
-                    for m in st.session_state.chat_messages if m["role"] == "user" or m.get("sql")
-                ]
-                try:
-                    res = nl_agent.process_query(active_q, conversation_history=history_context)
-                except TypeError:
-                    fresh_agent = NLToSQLAgent()
-                    res = fresh_agent.process_query(active_q, conversation_history=history_context)
+                        # Result Data Table & Dynamic Chart
+                        df_res = msg.get("data")
+                        if df_res is not None and isinstance(df_res, pd.DataFrame) and not df_res.empty:
+                            c_t1, c_t2 = st.columns([1.1, 1.2])
+                            with c_t1:
+                                st.markdown("<div style='margin-left: 50px;'><b>Query Result Matrix:</b></div>", unsafe_allow_html=True)
+                                st.dataframe(df_res, use_container_width=True, hide_index=True)
+                                csv_data = df_res.to_csv(index=False).encode('utf-8')
+                                st.download_button(
+                                    f"Export CSV (Turn {idx})",
+                                    data=csv_data,
+                                    file_name=f"loan_query_result_{idx}.csv",
+                                    mime="text/csv",
+                                    key=f"dl_csv_chat_{idx}"
+                                )
 
-            st.session_state.last_query_result = res
+                            with c_t2:
+                                if len(df_res.columns) >= 2 and len(df_res) > 1:
+                                    first_col = df_res.columns[0]
+                                    numeric_cols = [c for c in df_res.columns[1:] if np.issubdtype(df_res[c].dtype, np.number)]
+                                    if numeric_cols:
+                                        target_col = numeric_cols[0]
+                                        fig_chat = px.bar(
+                                            df_res, x=first_col, y=target_col,
+                                            text=target_col,
+                                            color=target_col,
+                                            color_continuous_scale="Blues",
+                                            labels={first_col: first_col.replace("_", " ").title(), target_col: target_col.replace("_", " ").title()}
+                                        )
+                                        fig_chat.update_layout(
+                                            template="plotly_dark",
+                                            plot_bgcolor="rgba(19, 27, 46, 0.8)",
+                                            paper_bgcolor="rgba(19, 27, 46, 0.8)",
+                                            height=260,
+                                            margin=dict(l=10, r=10, t=20, b=10),
+                                            coloraxis_showscale=False
+                                        )
+                                        fig_chat.update_traces(textposition='outside')
+                                        st.plotly_chart(fig_chat, use_container_width=True)
+
+                        # Generated SQL Expander
+                        with st.expander(f"View DuckDB SQL Query (Turn {idx})", expanded=False):
+                            st.code(msg["sql"], language="sql")
+
+    # Chat Input Box at Bottom
+    user_query_input = st.chat_input("Ask a question about the loan portfolio or follow-up on previous data...") or quick_pill_prompt
+
+    if user_query_input:
+        active_inquiry = user_query_input.strip()
+        # 1. Add user message on the RIGHT
+        st.session_state.chat_messages.append({
+            "role": "user",
+            "content": active_inquiry
+        })
+
+        # 2. Process query via NLToSQLAgent with conversation context
+        with st.spinner("Analyzing inquiry and executing in-memory DuckDB query..."):
+            history_context = [
+                {"question": m.get("content", ""), "sql": m.get("sql", "")}
+                for m in st.session_state.chat_messages if m["role"] == "user" or m.get("sql")
+            ]
+            try:
+                res = nl_agent.process_query(active_inquiry, conversation_history=history_context)
+            except TypeError:
+                fresh_agent = NLToSQLAgent()
+                res = fresh_agent.process_query(active_inquiry, conversation_history=history_context)
+
+        # 3. Add bot response on the LEFT
+        if res["success"]:
+            bot_text = f"Here is the quantitative breakdown for: *\"{active_inquiry}\"*."
             st.session_state.chat_messages.append({
-                "role": "assistant",
-                "question": active_q,
+                "role": "bot",
+                "content": bot_text,
+                "show_pills": False,
                 "sql": res.get("sql"),
                 "data": res.get("data"),
                 "executive_summary": res.get("executive_summary"),
                 "latency_badge": res.get("latency_badge", "Executed in <25ms"),
                 "row_count": res.get("row_count", 0),
-                "success": res.get("success", False),
-                "error": res.get("error")
+                "success": True
             })
-            st.rerun()
-
-        # Conversation History Stream on Left
-        if st.session_state.chat_messages:
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown("#### Conversation Inquiry History:")
-            for i, msg in enumerate(st.session_state.chat_messages):
-                if msg["role"] == "user":
-                    st.markdown(f"""
-                    <div style="background: #131B2E; border-left: 3px solid #38BDF8; border-radius: 4px; padding: 8px 12px; margin-bottom: 6px; font-size: 0.85rem; color: #E2E8F0;">
-                        <b>Q{i//2 + 1}:</b> {msg['content']}
-                    </div>
-                    """, unsafe_allow_html=True)
-
-    # --------------------------------------------------------------------------
-    # RIGHT COLUMN: ANSWERS, DATA & VISUAL INTELLIGENCE
-    # --------------------------------------------------------------------------
-    with col_answer:
-        st.markdown("### Answers & Quantitative Intelligence")
-        
-        last_res = st.session_state.last_query_result
-
-        if last_res and last_res.get("success"):
-            # Execution Telemetry Header
-            st.markdown(f"""
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #0E1524; padding: 8px 14px; border-radius: 6px; border: 1px solid #1E293B;">
-                <span class="badge-latency">{last_res.get('latency_badge', 'Executed in <25ms')}</span>
-                <span style="font-size: 0.82rem; color: #94A3B8;">Records Returned: <b style="color: #F8FAFC; font-family: 'JetBrains Mono';">{last_res.get('row_count', 0)}</b></span>
-                <span style="font-size: 0.78rem; color: #10B981; font-weight: 700;">[AST SAFETY: READ-ONLY SELECT]</span>
-            </div>
-            """, unsafe_allow_html=True)
-
-            # 1. Executive Synthesis
-            if last_res.get("executive_summary"):
-                st.markdown("#### Executive Synthesis & Key Takeaways")
-                st.markdown("<div class='narrative-card'>", unsafe_allow_html=True)
-                for bullet in last_res["executive_summary"]:
-                    st.markdown(f"- {bullet}")
-                st.markdown("</div>", unsafe_allow_html=True)
-
-            # 2. Result Data Table & CSV Download
-            df_ans = last_res.get("data")
-            if df_ans is not None and isinstance(df_ans, pd.DataFrame) and not df_ans.empty:
-                st.markdown("<br>", unsafe_allow_html=True)
-                d_c1, d_c2 = st.columns([3, 1])
-                with d_c1:
-                    st.markdown("#### Result Data Matrix")
-                with d_c2:
-                    csv_bytes = df_ans.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        "Export CSV",
-                        data=csv_bytes,
-                        file_name="loan_intelligence_result.csv",
-                        mime="text/csv",
-                        use_container_width=True,
-                        key="dl_ans_csv"
-                    )
-                st.dataframe(df_ans, use_container_width=True, hide_index=True)
-
-                # 3. Dynamic Interactive Visualization
-                if len(df_ans.columns) >= 2 and len(df_ans) > 1:
-                    first_col = df_ans.columns[0]
-                    numeric_cols = [c for c in df_ans.columns[1:] if np.issubdtype(df_ans[c].dtype, np.number)]
-                    
-                    if numeric_cols:
-                        st.markdown("<br>", unsafe_allow_html=True)
-                        st.markdown("#### Visual Intelligence Chart")
-                        target_col = numeric_cols[0]
-                        fig_dyn = px.bar(
-                            df_ans, x=first_col, y=target_col,
-                            text=target_col,
-                            color=target_col,
-                            color_continuous_scale="Blues",
-                            labels={first_col: first_col.replace("_", " ").title(), target_col: target_col.replace("_", " ").title()}
-                        )
-                        fig_dyn.update_layout(
-                            template="plotly_dark",
-                            plot_bgcolor="rgba(19, 27, 46, 0.8)",
-                            paper_bgcolor="rgba(19, 27, 46, 0.8)",
-                            height=300,
-                            margin=dict(l=10, r=10, t=20, b=10),
-                            coloraxis_showscale=False
-                        )
-                        fig_dyn.update_traces(textposition='outside')
-                        st.plotly_chart(fig_dyn, use_container_width=True)
-
-            # 4. Generated SQL Code Expander
-            st.markdown("<br>", unsafe_allow_html=True)
-            with st.expander("View Generated DuckDB SQL Query", expanded=False):
-                st.code(last_res.get("sql", "-- No SQL available"), language="sql")
-
-        elif last_res and not last_res.get("success"):
-            st.error(f"Query Error: {last_res.get('error', 'Execution failed')}")
         else:
-            # Default State before any query
-            st.markdown("""
-            <div style="background: linear-gradient(180deg, #131B2E 0%, #0F172A 100%); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 32px 24px; text-align: center; margin-top: 10px;">
-                <div style="font-size: 1.1rem; font-weight: 700; color: #F8FAFC; margin-bottom: 8px;">Waiting for your loan inquiry...</div>
-                <div style="font-size: 0.88rem; color: #94A3B8; max-width: 520px; margin: 0 auto; line-height: 1.5;">
-                    Select a suggested question on the left or type your custom query. The agent will execute sub-15ms SQL against the DuckDB OLAP engine and present structured business insights, tabular data, and dynamic charts here.
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+            st.session_state.chat_messages.append({
+                "role": "bot",
+                "content": f"I encountered an issue executing that query: `{res.get('error', 'Execution error')}`. You can try rephrasing or clicking one of the suggested query pills above.",
+                "show_pills": True,
+                "sql": res.get("sql"),
+                "data": None,
+                "executive_summary": None,
+                "latency_badge": "Error",
+                "row_count": 0,
+                "success": False
+            })
+
+        st.rerun()
 
 # ==============================================================================
 # SIDEBAR DIAGNOSTICS & SYSTEM STATUS
