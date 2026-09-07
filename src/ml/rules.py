@@ -73,13 +73,15 @@ class RuleEngine:
         return self.rules
 
     def _extract_rules_from_tree(self, clf: DecisionTreeClassifier, feature_names: List[str], X: np.ndarray, y: np.ndarray) -> List[Dict[str, Any]]:
-        """Traverses the decision tree structure to extract IF-THEN rules."""
+        """Traverses the decision tree structure to extract IF-THEN rules with empirical portfolio statistics."""
         tree_ = clf.tree_
         feature_name = [
             feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined!"
             for i in tree_.feature
         ]
 
+        # Get true leaf assignment for all training records
+        leaf_indices = clf.apply(X)
         rules = []
 
         def recurse(node, conditions):
@@ -95,24 +97,30 @@ class RuleEngine:
                 right_cond = conditions + [f"{name} > {threshold:.4f}"]
                 recurse(tree_.children_right[node], right_cond)
             else:
-                # Leaf node
-                value = tree_.value[node][0]
-                total_samples = int(np.sum(value))
-                defaulters = int(value[1])
-                default_rate = defaulters / total_samples if total_samples > 0 else 0.0
+                # Leaf node: compute true empirical counts across empirical samples
+                mask = (leaf_indices == node)
+                total_samples = int(np.sum(mask))
+                if total_samples > 0:
+                    defaulters = int(np.sum(y[mask]))
+                    default_rate = defaulters / total_samples
+                else:
+                    total_samples = int(tree_.n_node_samples[node])
+                    val = tree_.value[node][0]
+                    defaulters = int(val[1] / max(1e-5, np.sum(val)) * total_samples)
+                    default_rate = defaulters / total_samples if total_samples > 0 else 0.08
 
-                # Determine Risk Tier
-                if default_rate < 0.25:
+                # Determine Calibrated Basel III Risk Tier
+                if default_rate < 0.06:
                     tier = "LOW RISK"
-                    action = "Auto-Approve"
+                    action = "Auto-Approve: Prime pricing, instant digital disbursal"
                     badge_color = "#10B981"
-                elif default_rate < 0.50:
+                elif default_rate <= 0.15:
                     tier = "MEDIUM RISK"
-                    action = "Manual Review / Income Verification"
+                    action = "Manual Underwriting: Secondary income verification & debt check"
                     badge_color = "#F59E0B"
                 else:
                     tier = "HIGH RISK"
-                    action = "Decline / Require Additional Collateral"
+                    action = "Decline / Restructure: High delinquency tier, reject unsecured loan"
                     badge_color = "#EF4444"
 
                 rule_text = " AND ".join(conditions) if conditions else "ALL APPLICANTS"
@@ -146,6 +154,25 @@ class RuleEngine:
             else:
                 self.fit_and_extract_rules()
 
+        # Compute applicant financial ratios if missing
+        app = dict(applicant_dict)
+        inc = float(app.get("AMT_INCOME_TOTAL", 150000.0))
+        cred = float(app.get("AMT_CREDIT", 500000.0))
+        ann = float(app.get("AMT_ANNUITY", 25000.0))
+        birth = float(app.get("DAYS_BIRTH", -14000.0))
+        emp = float(app.get("DAYS_EMPLOYED", -2000.0))
+        ext1 = float(app.get("EXT_SOURCE_1", 0.5))
+        ext2 = float(app.get("EXT_SOURCE_2", 0.5))
+        ext3 = float(app.get("EXT_SOURCE_3", 0.5))
+
+        app["ANNUITY_INCOME_PERC"] = ann / (inc + 1e-5)
+        app["PAYMENT_RATE"] = ann / (cred + 1e-5)
+        app["INCOME_CREDIT_PERC"] = inc / (cred + 1e-5)
+        app["DAYS_EMPLOYED_PERC"] = abs(emp) / (abs(birth) + 1e-5)
+        app["AGE_YEARS"] = abs(birth) / 365.25
+        app["EXT_SOURCES_MEAN"] = (ext1 + ext2 + ext3) / 3.0
+        app["REGION_RATING_CLIENT"] = float(app.get("REGION_RATING_CLIENT", 2.0))
+
         matching_rules = []
         for rule in self.rules:
             cond = rule["condition"]
@@ -153,11 +180,9 @@ class RuleEngine:
                 matching_rules.append(rule)
                 continue
 
-            # Evaluate condition string safely using applicant variables
             try:
                 # Safe evaluation environment
-                local_vars = {k: float(v) for k, v in applicant_dict.items() if isinstance(v, (int, float))}
-                # Replace 'AND' with 'and' for python eval
+                local_vars = {k: float(v) for k, v in app.items() if isinstance(v, (int, float))}
                 py_expr = cond.replace(" AND ", " and ")
                 if eval(py_expr, {"__builtins__": None}, local_vars):
                     matching_rules.append(rule)

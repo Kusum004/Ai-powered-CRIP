@@ -22,8 +22,10 @@ st.set_page_config(
 import importlib
 import src.utils.config
 import src.talk_to_data.nl_to_sql
+import src.ml.rules
 importlib.reload(src.utils.config)
 importlib.reload(src.talk_to_data.nl_to_sql)
+importlib.reload(src.ml.rules)
 
 from src.utils.config import Config
 from src.utils.logger import get_logger
