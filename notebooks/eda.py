@@ -24,7 +24,7 @@ def run_eda():
     Config.ensure_directories()
     
     loader = DataLoader()
-    df = loader.load_raw_dataframe(max_rows=100000)
+    df = loader.load_raw_dataframe(max_rows=None)
     preprocessor = DataPreprocessor()
     df_eng = preprocessor.engineer_features(df)
 

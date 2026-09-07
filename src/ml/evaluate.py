@@ -24,7 +24,7 @@ def evaluate_models(df: pd.DataFrame = None) -> dict:
     """
     if df is None:
         loader = DataLoader()
-        df = loader.load_raw_dataframe(max_rows=50000)
+        df = loader.load_raw_dataframe(max_rows=None)
 
     preprocessor = DataPreprocessor.load(Config.PREPROCESSOR_PATH)
     lgb_model = joblib.load(Config.CHAMPION_MODEL_PATH)

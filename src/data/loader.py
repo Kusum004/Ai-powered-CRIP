@@ -57,11 +57,10 @@ class DataLoader:
                         except Exception as e:
                             logger.warning(f"Schema statement notice: {e}")
 
-            # Ingest CSV directly into loan_applications table or view
             csv_path_str = str(self.raw_data_path).replace("\\", "/")
             query = f"""
                 CREATE OR REPLACE TABLE loan_applications AS 
-                SELECT * FROM read_csv_auto('{csv_path_str}', header=True, sample_size=20000);
+                SELECT * FROM read_csv_auto('{csv_path_str}', header=True);
             """
             self.conn.execute(query)
             

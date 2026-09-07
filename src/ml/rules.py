@@ -37,7 +37,7 @@ class RuleEngine:
         """
         if df is None:
             loader = DataLoader()
-            df = loader.load_raw_dataframe(max_rows=50000)
+            df = loader.load_raw_dataframe(max_rows=None)
 
         preprocessor = DataPreprocessor()
         df_eng = preprocessor.engineer_features(df)
