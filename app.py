@@ -2,6 +2,7 @@
 """Master Enterprise Credit Risk Intelligence Platform Streamlit Cockpit."""
 import time
 import os
+import json
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -33,147 +34,194 @@ from src.ml.train import train_all_models
 logger = get_logger("StreamlitApp")
 
 # ==============================================================================
-# CUSTOM ENTERPRISE FINTECH CSS (DARK SLATE PALETTE, NO EMOJIS)
+# CUSTOM ENTERPRISE FINTECH CSS (DARK SLATE PALETTE, MODERN GLASSMORPHISM)
 # ==============================================================================
 CUSTOM_CSS = """
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
     /* Global Base */
     .stApp {
-        background-color: #0B0F17;
+        background-color: #080C14;
         color: #F8FAFC;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     
-    /* Headers & Text */
+    /* Headers & Typography */
     h1, h2, h3, h4, h5, h6 {
-        color: #F1F5F9 !important;
+        color: #FFFFFF !important;
         font-weight: 700;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.025em;
+    }
+
+    code, pre {
+        font-family: 'JetBrains Mono', monospace !important;
     }
     
     /* Top Navbar Header */
     .platform-header {
-        background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
-        border: 1px solid #334155;
-        border-radius: 10px;
-        padding: 20px 24px;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(56, 189, 248, 0.15);
+        border-radius: 12px;
+        padding: 22px 28px;
         margin-bottom: 24px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
     }
     .platform-title {
-        font-size: 1.6rem;
+        font-size: 1.65rem;
         font-weight: 800;
         color: #FFFFFF;
+        letter-spacing: -0.02em;
         margin: 0;
     }
     .platform-subtitle {
-        font-size: 0.9rem;
+        font-size: 0.88rem;
         color: #94A3B8;
         margin-top: 4px;
+        font-weight: 500;
     }
     
-    /* Metrics Cards */
+    /* Metrics / KPI Cards */
     .kpi-card {
-        background: #1E293B;
-        border: 1px solid #334155;
-        border-radius: 8px;
-        padding: 16px 20px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        background: linear-gradient(180deg, #131B2E 0%, #0F172A 100%);
+        border: 1px solid rgba(51, 65, 85, 0.7);
+        border-radius: 10px;
+        padding: 18px 22px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .kpi-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(56, 189, 248, 0.4);
     }
     .kpi-label {
-        font-size: 0.8rem;
+        font-size: 0.78rem;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.06em;
         color: #94A3B8;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
     }
     .kpi-value {
-        font-size: 1.7rem;
+        font-size: 1.85rem;
         font-weight: 800;
         color: #F8FAFC;
+        line-height: 1.2;
     }
     .kpi-sub {
-        font-size: 0.8rem;
+        font-size: 0.82rem;
         color: #38BDF8;
-        margin-top: 4px;
+        margin-top: 6px;
+        font-weight: 500;
     }
 
     /* Decision Badges */
     .badge-auto-approve {
-        background-color: rgba(16, 185, 129, 0.15);
+        background: rgba(16, 185, 129, 0.12);
         color: #10B981;
-        border: 1px solid #10B981;
+        border: 1px solid rgba(16, 185, 129, 0.4);
         padding: 6px 14px;
         border-radius: 6px;
         font-weight: 700;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         display: inline-block;
         letter-spacing: 0.03em;
     }
     .badge-manual-review {
-        background-color: rgba(245, 158, 11, 0.15);
+        background: rgba(245, 158, 11, 0.12);
         color: #F59E0B;
-        border: 1px solid #F59E0B;
+        border: 1px solid rgba(245, 158, 11, 0.4);
         padding: 6px 14px;
         border-radius: 6px;
         font-weight: 700;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         display: inline-block;
         letter-spacing: 0.03em;
     }
     .badge-decline {
-        background-color: rgba(239, 68, 68, 0.15);
+        background: rgba(239, 68, 68, 0.12);
         color: #EF4444;
-        border: 1px solid #EF4444;
+        border: 1px solid rgba(239, 68, 68, 0.4);
         padding: 6px 14px;
         border-radius: 6px;
         font-weight: 700;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         display: inline-block;
         letter-spacing: 0.03em;
     }
     .badge-latency {
-        background-color: rgba(14, 165, 233, 0.15);
+        background: rgba(14, 165, 233, 0.12);
         color: #38BDF8;
-        border: 1px solid #0284C7;
-        padding: 4px 10px;
-        border-radius: 4px;
-        font-size: 0.8rem;
+        border: 1px solid rgba(14, 165, 233, 0.35);
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-size: 0.82rem;
         font-weight: 600;
+        font-family: 'JetBrains Mono', monospace;
         display: inline-block;
     }
 
     /* Tabs Styling */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
-        background-color: #0F172A;
+        background-color: #0E1524;
         padding: 8px;
-        border-radius: 8px;
-        border: 1px solid #1E293B;
+        border-radius: 10px;
+        border: 1px solid rgba(51, 65, 85, 0.5);
     }
     .stTabs [data-baseweb="tab"] {
         background-color: transparent;
         color: #94A3B8;
-        border-radius: 6px;
+        border-radius: 8px;
         font-weight: 600;
-        padding: 8px 18px;
+        padding: 10px 20px;
+        transition: all 0.2s ease;
+    }
+    .stTabs [data-baseweb="tab"]:hover {
+        color: #FFFFFF;
+        background-color: rgba(255, 255, 255, 0.03);
     }
     .stTabs [aria-selected="true"] {
-        background-color: #1E293B !important;
+        background: linear-gradient(135deg, #1E293B 0%, #172033 100%) !important;
         color: #38BDF8 !important;
-        border-bottom: 2px solid #38BDF8 !important;
+        border: 1px solid rgba(56, 189, 248, 0.3) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     }
 
     /* Underwriter Summary Card */
     .narrative-card {
-        background-color: #1E293B;
+        background: linear-gradient(180deg, #131B2E 0%, #0F172A 100%);
+        border: 1px solid rgba(56, 189, 248, 0.25);
         border-left: 4px solid #38BDF8;
-        border-radius: 0 8px 8px 0;
-        padding: 16px 20px;
-        margin-top: 16px;
+        border-radius: 8px;
+        padding: 18px 22px;
+        margin-top: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Preset Selection Buttons */
+    .preset-chip {
+        display: inline-block;
+        background: #1E293B;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        padding: 4px 10px;
+        margin-right: 6px;
+        font-size: 0.8rem;
+        color: #94A3B8;
+    }
+
+    /* Telemetry Sidebar Card */
+    .sidebar-telemetry {
+        background: #0E1524;
+        border: 1px solid rgba(51, 65, 85, 0.6);
+        border-radius: 8px;
+        padding: 14px;
+        margin-bottom: 16px;
     }
 </style>
 """
@@ -212,11 +260,13 @@ st.markdown("""
 <div class="platform-header">
     <div>
         <div class="platform-title">CREDIT RISK INTELLIGENCE PLATFORM</div>
-        <div class="platform-subtitle">Enterprise Quantitative Underwriting & Talk-to-Data OLAP Cockpit</div>
+        <div class="platform-subtitle">Enterprise Quantitative Risk Modeling, In-Memory OLAP & Agentic SQL Copilot</div>
     </div>
     <div style="text-align: right;">
-        <span class="badge-auto-approve">[SYSTEM STATUS: OPERATIONAL]</span>
-        <div style="font-size: 0.75rem; color: #64748B; margin-top: 4px;">Engine: DuckDB In-Memory + LightGBM GBDT</div>
+        <span class="badge-auto-approve">[STATUS: OPERATIONAL]</span>
+        <div style="font-size: 0.78rem; color: #94A3B8; margin-top: 5px; font-family: 'JetBrains Mono', monospace;">
+            DuckDB OLAP &bull; LightGBM GBDT &bull; Groq LLaMA 3.3
+        </div>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -247,16 +297,16 @@ with tab1:
             <div class="kpi-card">
                 <div class="kpi-label">Total Portfolio Applications</div>
                 <div class="kpi-value">{summary['total_loans']:,}</div>
-                <div class="kpi-sub">Active In-Memory Records</div>
+                <div class="kpi-sub">Active Columnar Records</div>
             </div>
             """, unsafe_allow_html=True)
             
         with col2:
             st.markdown(f"""
             <div class="kpi-card">
-                <div class="kpi-label">Overall Default Rate</div>
+                <div class="kpi-label">Portfolio Default Rate</div>
                 <div class="kpi-value" style="color: #F87171;">{summary['overall_default_rate_pct']}%</div>
-                <div class="kpi-sub">{summary['total_defaulters']:,} Historical Defaulters</div>
+                <div class="kpi-sub">{summary['total_defaulters']:,} Empirical Defaulters</div>
             </div>
             """, unsafe_allow_html=True)
             
@@ -265,7 +315,7 @@ with tab1:
             <div class="kpi-card">
                 <div class="kpi-label">Total Credit Exposure</div>
                 <div class="kpi-value">{format_currency(summary['total_portfolio_exposure'] / 1e9, symbol='$')}B</div>
-                <div class="kpi-sub">Avg Loan: {format_currency(summary['avg_credit_amount'])}</div>
+                <div class="kpi-sub">Avg Principal: {format_currency(summary['avg_credit_amount'])}</div>
             </div>
             """, unsafe_allow_html=True)
             
@@ -310,7 +360,13 @@ with tab1:
             color_continuous_scale=["#10B981", "#F59E0B", "#EF4444"],
             labels={"income_bracket": "Income Quintile", "default_rate_pct": "Default Rate (%)"}
         )
-        fig_inc.update_layout(template="plotly_dark", plot_bgcolor="#1E293B", paper_bgcolor="#1E293B", margin=dict(l=20, r=20, t=30, b=20))
+        fig_inc.update_layout(
+            template="plotly_dark",
+            plot_bgcolor="rgba(19, 27, 46, 0.8)",
+            paper_bgcolor="rgba(19, 27, 46, 0.8)",
+            margin=dict(l=20, r=20, t=30, b=20),
+            coloraxis_showscale=False
+        )
         fig_inc.update_traces(texttemplate='%{text:.2f}%', textposition='outside')
         st.plotly_chart(fig_inc, use_container_width=True)
         st.caption("Lower income brackets demonstrate 1.8x higher default frequency relative to top earners.")
@@ -332,8 +388,13 @@ with tab1:
             line_shape="spline",
             labels={"bureau_rating_bucket": "Composite Bureau Rating (0.0 to 1.0)", "default_rate_pct": "Default Rate (%)"}
         )
-        fig_ext.update_traces(line_color="#38BDF8", marker=dict(size=8, color="#0284C7"))
-        fig_ext.update_layout(template="plotly_dark", plot_bgcolor="#1E293B", paper_bgcolor="#1E293B", margin=dict(l=20, r=20, t=30, b=20))
+        fig_ext.update_traces(line_color="#00E5FF", line_width=3, marker=dict(size=8, color="#38BDF8"))
+        fig_ext.update_layout(
+            template="plotly_dark",
+            plot_bgcolor="rgba(19, 27, 46, 0.8)",
+            paper_bgcolor="rgba(19, 27, 46, 0.8)",
+            margin=dict(l=20, r=20, t=30, b=20)
+        )
         st.plotly_chart(fig_ext, use_container_width=True)
         st.caption("Strong negative monotonic relationship: Default risk drops from >25% at rating 0.1 down to <2% above 0.8.")
 
@@ -364,7 +425,13 @@ with tab1:
             color_continuous_scale=["#10B981", "#F59E0B", "#EF4444"],
             labels={"age_cohort": "Age Cohort", "default_rate_pct": "Default Rate (%)"}
         )
-        fig_age.update_layout(template="plotly_dark", plot_bgcolor="#1E293B", paper_bgcolor="#1E293B", margin=dict(l=20, r=20, t=30, b=20))
+        fig_age.update_layout(
+            template="plotly_dark",
+            plot_bgcolor="rgba(19, 27, 46, 0.8)",
+            paper_bgcolor="rgba(19, 27, 46, 0.8)",
+            margin=dict(l=20, r=20, t=30, b=20),
+            coloraxis_showscale=False
+        )
         fig_age.update_traces(texttemplate='%{text:.2f}%', textposition='outside')
         st.plotly_chart(fig_age, use_container_width=True)
         st.caption("Younger borrowers (<30) exhibit higher default frequency (~11.5%) compared to mature cohorts (60+: ~5.0%).")
@@ -393,7 +460,13 @@ with tab1:
             color_continuous_scale=["#10B981", "#EF4444"],
             labels={"dti_tier": "Debt-to-Income Tier", "default_rate_pct": "Default Rate (%)"}
         )
-        fig_dti.update_layout(template="plotly_dark", plot_bgcolor="#1E293B", paper_bgcolor="#1E293B", margin=dict(l=20, r=20, t=30, b=20))
+        fig_dti.update_layout(
+            template="plotly_dark",
+            plot_bgcolor="rgba(19, 27, 46, 0.8)",
+            paper_bgcolor="rgba(19, 27, 46, 0.8)",
+            margin=dict(l=20, r=20, t=30, b=20),
+            coloraxis_showscale=False
+        )
         fig_dti.update_traces(texttemplate='%{text:.2f}%', textposition='outside')
         st.plotly_chart(fig_dti, use_container_width=True)
         st.caption("Applicants whose annuity payments exceed 30% of income enter high-risk delinquency territory.")
@@ -421,7 +494,14 @@ with tab1:
         color_continuous_scale=["#10B981", "#F59E0B", "#EF4444"],
         labels={"occupation": "Occupation Type", "default_rate_pct": "Default Rate (%)"}
     )
-    fig_occ.update_layout(template="plotly_dark", plot_bgcolor="#1E293B", paper_bgcolor="#1E293B", height=450, margin=dict(l=20, r=20, t=30, b=20))
+    fig_occ.update_layout(
+        template="plotly_dark",
+        plot_bgcolor="rgba(19, 27, 46, 0.8)",
+        paper_bgcolor="rgba(19, 27, 46, 0.8)",
+        height=450,
+        margin=dict(l=20, r=20, t=30, b=20),
+        coloraxis_showscale=False
+    )
     fig_occ.update_traces(texttemplate='%{text:.2f}%', textposition='outside')
     st.plotly_chart(fig_occ, use_container_width=True)
 
@@ -430,7 +510,83 @@ with tab1:
 # ==============================================================================
 with tab2:
     st.markdown("### Real-Time Applicant Underwriting & Credit Scoring Engine")
-    st.markdown("Adjust applicant financial attributes and bureau ratings to evaluate instant calibrated risk scores and SHAP explainability.")
+    st.markdown("Evaluate individual credit applications with instant calibrated risk scores, Basel III risk tiers, and SHAP feature attributions.")
+
+    # Quick Presets for Instant Testing
+    st.markdown("#### Quick Applicant Profile Presets:")
+    p_col1, p_col2, p_col3, p_col4 = st.columns(4)
+    
+    preset_choice = None
+    with p_col1:
+        if st.button("Preset: Prime Borrower (Low Risk)", use_container_width=True):
+            preset_choice = "prime"
+    with p_col2:
+        if st.button("Preset: Moderate Risk Borrower", use_container_width=True):
+            preset_choice = "moderate"
+    with p_col3:
+        if st.button("Preset: Subprime / Stressed Borrower", use_container_width=True):
+            preset_choice = "subprime"
+    with p_col4:
+        if st.button("Reset Defaults", use_container_width=True):
+            preset_choice = "default"
+
+    # Default preset values
+    val_income = 180000.0
+    val_credit = 500000.0
+    val_annuity = 25000.0
+    val_goods = 450000.0
+    val_age = 38
+    val_emp = 6.5
+    val_ext1 = 0.55
+    val_ext2 = 0.62
+    val_ext3 = 0.58
+    val_edu = "Higher education"
+    val_inc_type = "Working"
+    val_fam = "Married"
+    val_occ = "Core staff"
+
+    if preset_choice == "prime":
+        val_income = 250000.0
+        val_credit = 400000.0
+        val_annuity = 18000.0
+        val_goods = 380000.0
+        val_age = 45
+        val_emp = 12.0
+        val_ext1 = 0.78
+        val_ext2 = 0.82
+        val_ext3 = 0.85
+        val_edu = "Higher education"
+        val_inc_type = "Commercial associate"
+        val_fam = "Married"
+        val_occ = "Managers"
+    elif preset_choice == "moderate":
+        val_income = 135000.0
+        val_credit = 450000.0
+        val_annuity = 24000.0
+        val_goods = 400000.0
+        val_age = 32
+        val_emp = 3.5
+        val_ext1 = 0.45
+        val_ext2 = 0.48
+        val_ext3 = 0.50
+        val_edu = "Secondary / secondary special"
+        val_inc_type = "Working"
+        val_fam = "Single / not married"
+        val_occ = "Sales staff"
+    elif preset_choice == "subprime":
+        val_income = 75000.0
+        val_credit = 600000.0
+        val_annuity = 38000.0
+        val_goods = 550000.0
+        val_age = 23
+        val_emp = 0.8
+        val_ext1 = 0.18
+        val_ext2 = 0.22
+        val_ext3 = 0.15
+        val_edu = "Lower secondary"
+        val_inc_type = "Working"
+        val_fam = "Single / not married"
+        val_occ = "Laborers"
 
     col_inputs, col_results = st.columns([1, 1.2])
 
@@ -439,27 +595,27 @@ with tab2:
         
         c1, c2 = st.columns(2)
         with c1:
-            amt_income = st.number_input("Annual Income ($)", min_value=10000.0, max_value=5000000.0, value=180000.0, step=5000.0)
-            amt_credit = st.number_input("Requested Credit ($)", min_value=20000.0, max_value=4000000.0, value=500000.0, step=10000.0)
-            amt_annuity = st.number_input("Monthly Annuity ($)", min_value=1000.0, max_value=300000.0, value=25000.0, step=1000.0)
-            age_years = st.slider("Applicant Age (Years)", min_value=20, max_value=75, value=38)
-            years_employed = st.slider("Years Employed", min_value=0.0, max_value=40.0, value=6.5, step=0.5)
+            amt_income = st.number_input("Annual Income ($)", min_value=10000.0, max_value=5000000.0, value=val_income, step=5000.0)
+            amt_credit = st.number_input("Requested Credit ($)", min_value=20000.0, max_value=4000000.0, value=val_credit, step=10000.0)
+            amt_annuity = st.number_input("Monthly Annuity ($)", min_value=1000.0, max_value=300000.0, value=val_annuity, step=1000.0)
+            age_years = st.slider("Applicant Age (Years)", min_value=20, max_value=75, value=int(val_age))
+            years_employed = st.slider("Years Employed", min_value=0.0, max_value=40.0, value=float(val_emp), step=0.5)
 
         with c2:
-            amt_goods = st.number_input("Goods Price ($)", min_value=10000.0, max_value=4000000.0, value=450000.0, step=10000.0)
-            education = st.selectbox("Education Level", ["Higher education", "Secondary / secondary special", "Incomplete higher", "Lower secondary", "Academic degree"])
-            income_type = st.selectbox("Income Type", ["Working", "Commercial associate", "State servant", "Pensioner"])
-            family_status = st.selectbox("Family Status", ["Married", "Single / not married", "Civil marriage", "Separated", "Widow"])
-            occupation = st.selectbox("Occupation", ["Core staff", "Managers", "Laborers", "Sales staff", "Drivers", "Accountants", "High skill tech staff"])
+            amt_goods = st.number_input("Goods Price ($)", min_value=10000.0, max_value=4000000.0, value=val_goods, step=10000.0)
+            education = st.selectbox("Education Level", ["Higher education", "Secondary / secondary special", "Incomplete higher", "Lower secondary", "Academic degree"], index=["Higher education", "Secondary / secondary special", "Incomplete higher", "Lower secondary", "Academic degree"].index(val_edu) if val_edu in ["Higher education", "Secondary / secondary special", "Incomplete higher", "Lower secondary", "Academic degree"] else 0)
+            income_type = st.selectbox("Income Type", ["Working", "Commercial associate", "State servant", "Pensioner"], index=["Working", "Commercial associate", "State servant", "Pensioner"].index(val_inc_type) if val_inc_type in ["Working", "Commercial associate", "State servant", "Pensioner"] else 0)
+            family_status = st.selectbox("Family Status", ["Married", "Single / not married", "Civil marriage", "Separated", "Widow"], index=["Married", "Single / not married", "Civil marriage", "Separated", "Widow"].index(val_fam) if val_fam in ["Married", "Single / not married", "Civil marriage", "Separated", "Widow"] else 0)
+            occupation = st.selectbox("Occupation", ["Core staff", "Managers", "Laborers", "Sales staff", "Drivers", "Accountants", "High skill tech staff"], index=["Core staff", "Managers", "Laborers", "Sales staff", "Drivers", "Accountants", "High skill tech staff"].index(val_occ) if val_occ in ["Core staff", "Managers", "Laborers", "Sales staff", "Drivers", "Accountants", "High skill tech staff"] else 0)
 
         st.markdown("#### External Bureau Ratings (0.0 to 1.0)")
         b1, b2, b3 = st.columns(3)
         with b1:
-            ext_1 = st.slider("Agency 1 Score", 0.0, 1.0, 0.55, 0.01)
+            ext_1 = st.slider("Agency 1 Score", 0.0, 1.0, float(val_ext1), 0.01)
         with b2:
-            ext_2 = st.slider("Agency 2 Score", 0.0, 1.0, 0.62, 0.01)
+            ext_2 = st.slider("Agency 2 Score", 0.0, 1.0, float(val_ext2), 0.01)
         with b3:
-            ext_3 = st.slider("Agency 3 Score", 0.0, 1.0, 0.58, 0.01)
+            ext_3 = st.slider("Agency 3 Score", 0.0, 1.0, float(val_ext3), 0.01)
 
         c_f1, c_f2 = st.columns(2)
         with c_f1:
@@ -489,7 +645,7 @@ with tab2:
         }
 
     with col_results:
-        st.markdown("#### Quantitative Scoring Decision")
+        st.markdown("#### Quantitative Underwriting Decision")
         
         # Run inference
         pred_res = predictor.predict_applicant(applicant_payload)
@@ -506,18 +662,18 @@ with tab2:
             mode="gauge+number",
             value=score,
             domain={'x': [0, 1], 'y': [0, 1]},
-            title={'text': f"FICO-Scaled Credit Score: {score} / 850", 'font': {'size': 18, 'color': '#FFFFFF'}},
-            number={'font': {'size': 36, 'color': color}},
+            title={'text': f"FICO-Scaled Credit Score: {score} / 850", 'font': {'size': 18, 'color': '#FFFFFF', 'family': 'Plus Jakarta Sans'}},
+            number={'font': {'size': 38, 'color': color, 'family': 'JetBrains Mono'}},
             gauge={
                 'axis': {'range': [300, 850], 'tickwidth': 1, 'tickcolor': "#94A3B8"},
-                'bar': {'color': color, 'thickness': 0.25},
-                'bgcolor': "#1E293B",
+                'bar': {'color': color, 'thickness': 0.28},
+                'bgcolor': "#131B2E",
                 'borderwidth': 1,
                 'bordercolor': "#334155",
                 'steps': [
-                    {'range': [300, 600], 'color': 'rgba(239, 68, 68, 0.25)'},
-                    {'range': [600, 750], 'color': 'rgba(245, 158, 11, 0.25)'},
-                    {'range': [750, 850], 'color': 'rgba(16, 185, 129, 0.25)'}
+                    {'range': [300, 600], 'color': 'rgba(239, 68, 68, 0.22)'},
+                    {'range': [600, 750], 'color': 'rgba(245, 158, 11, 0.22)'},
+                    {'range': [750, 850], 'color': 'rgba(16, 185, 129, 0.22)'}
                 ],
                 'threshold': {
                     'line': {'color': "#FFFFFF", 'width': 3},
@@ -526,7 +682,13 @@ with tab2:
                 }
             }
         ))
-        fig_gauge.update_layout(template="plotly_dark", plot_bgcolor="#1E293B", paper_bgcolor="#1E293B", height=240, margin=dict(l=20, r=20, t=30, b=10))
+        fig_gauge.update_layout(
+            template="plotly_dark",
+            plot_bgcolor="rgba(19, 27, 46, 0.8)",
+            paper_bgcolor="rgba(19, 27, 46, 0.8)",
+            height=250,
+            margin=dict(l=20, r=20, t=30, b=10)
+        )
         st.plotly_chart(fig_gauge, use_container_width=True)
 
         # Underwriting Decision Banner
@@ -537,13 +699,23 @@ with tab2:
         else:
             badge_class = "badge-decline"
 
+        # Key domain ratios for this applicant
+        dti_pct = round((amt_annuity / (amt_income + 1e-5)) * 100, 1)
+        loan_inc_ratio = round(amt_credit / (amt_income + 1e-5), 2)
+        comp_bureau = round((ext_1 + ext_2 + ext_3) / 3.0, 2)
+
         st.markdown(f"""
-        <div style="background: #1E293B; border: 1px solid #334155; border-radius: 8px; padding: 14px 18px; margin-top: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <div style="background: linear-gradient(180deg, #131B2E 0%, #0F172A 100%); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; padding: 18px 20px; margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <span class="{badge_class}">{badge_text}</span>
-                <span style="font-size: 0.9rem; color: #94A3B8;">Calibrated Default Probability: <b style="color: #F8FAFC;">{prob_pct}%</b></span>
+                <span style="font-size: 0.92rem; color: #94A3B8;">Predicted Default Probability: <b style="color: #F8FAFC; font-family: 'JetBrains Mono';">{prob_pct}%</b></span>
             </div>
-            <div style="font-size: 0.95rem; color: #E2E8F0; line-height: 1.4;">{recommendation}</div>
+            <div style="font-size: 0.95rem; color: #E2E8F0; line-height: 1.5; margin-bottom: 14px;">{recommendation}</div>
+            <div style="display: flex; gap: 12px; border-top: 1px solid #334155; padding-top: 12px; font-size: 0.82rem; color: #94A3B8;">
+                <div>DTI Ratio: <b style="color: {'#EF4444' if dti_pct > 30 else '#10B981'}; font-family: 'JetBrains Mono';">{dti_pct}%</b></div>
+                <div>Credit/Income: <b style="color: #F8FAFC; font-family: 'JetBrains Mono';">{loan_inc_ratio}x</b></div>
+                <div>Composite Bureau: <b style="color: #38BDF8; font-family: 'JetBrains Mono';">{comp_bureau}</b></div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -572,12 +744,12 @@ with tab2:
                 orientation="h",
                 color="color",
                 color_discrete_map="identity",
-                labels={"shap_value": "SHAP Impact on Default Log-Odds (Red = Higher Risk, Green = Safer)", "display_name": "Risk Feature"}
+                labels={"shap_value": "SHAP Impact on Default Log-Odds (Red = Risk Driver, Green = Safety Driver)", "display_name": "Risk Feature"}
             )
             fig_shap.update_layout(
                 template="plotly_dark",
-                plot_bgcolor="#1E293B",
-                paper_bgcolor="#1E293B",
+                plot_bgcolor="rgba(19, 27, 46, 0.8)",
+                paper_bgcolor="rgba(19, 27, 46, 0.8)",
                 height=380,
                 margin=dict(l=20, r=20, t=20, b=20),
                 yaxis={'categoryorder':'total ascending'}
@@ -590,10 +762,9 @@ with tab2:
             
             memo_html = "<div class='narrative-card'>"
             for b in bullets:
-                # Convert markdown bold to HTML
                 clean_b = b.replace("**", "<b>").replace("**", "</b>")
                 if clean_b.startswith("•"):
-                    memo_html += f"<div style='margin-bottom: 8px; font-size: 0.9rem; color: #CBD5E1;'>{clean_b}</div>"
+                    memo_html += f"<div style='margin-bottom: 8px; font-size: 0.88rem; color: #CBD5E1; line-height: 1.4;'>{clean_b}</div>"
                 else:
                     memo_html += f"<div style='margin-top: 10px; margin-bottom: 6px; font-size: 0.95rem; font-weight: 700; color: #38BDF8;'>{clean_b}</div>"
             memo_html += "</div>"
@@ -612,27 +783,40 @@ with tab3:
     # Load / Extract Rules
     rules_list = rule_engine.fit_and_extract_rules() if not rule_engine.rules else rule_engine.rules
 
-    tier_filter = st.selectbox("Filter Rules by Risk Tier", ["All Rules", "LOW RISK", "MEDIUM RISK", "HIGH RISK"])
+    r_col1, r_col2 = st.columns([1, 2])
+    with r_col1:
+        tier_filter = st.selectbox("Filter Rules by Risk Tier", ["All Rules", "LOW RISK", "MEDIUM RISK", "HIGH RISK"])
+    with r_col2:
+        search_kw = st.text_input("Search rule conditions (e.g. EXT_SOURCES, ANNUITY)", value="")
 
+    filtered_rules = rules_list
     if tier_filter != "All Rules":
-        filtered_rules = [r for r in rules_list if r["assigned_tier"] == tier_filter]
-    else:
-        filtered_rules = rules_list
+        filtered_rules = [r for r in filtered_rules if r["assigned_tier"] == tier_filter]
+    if search_kw:
+        filtered_rules = [r for r in filtered_rules if search_kw.lower() in r["condition"].lower()]
 
     # Display Rules Table
     rule_rows = []
     for r in filtered_rules:
         rule_rows.append({
             "Rule ID": r["rule_id"],
-            "Assigned Risk Tier": r["assigned_tier"],
-            "Empirical Default Rate": f"{r['empirical_default_rate_pct']}%",
-            "Population Coverage (Applicants)": f"{r['leaf_samples']:,}",
+            "Risk Tier": r["assigned_tier"],
+            "Default Rate": f"{r['empirical_default_rate_pct']}%",
+            "Population Coverage": f"{r['leaf_samples']:,} applicants",
             "Recommended Action": r["recommended_action"],
             "Rule Logic Condition": r["condition"]
         })
 
     df_rules_display = pd.DataFrame(rule_rows)
     st.dataframe(df_rules_display, use_container_width=True, hide_index=True)
+
+    # Download Rules Button
+    st.download_button(
+        "Export Policy Ruleset (JSON)",
+        data=json.dumps(rules_list, indent=2),
+        file_name="credit_policy_rules.json",
+        mime="application/json"
+    )
 
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("### Active Applicant Rule Matching")
@@ -657,7 +841,7 @@ with tab4:
     st.markdown("Ask natural language analytical questions across 307,511 loan records. The copilot generates AST-sanitized DuckDB SQL and delivers sub-15ms aggregations.")
 
     # Pre-canned prompt buttons
-    st.markdown("#### Suggested Financial Inquiries:")
+    st.markdown("#### Suggested Inquiries:")
     c_q1, c_q2, c_q3, c_q4 = st.columns(4)
     
     selected_query = None
@@ -668,7 +852,7 @@ with tab4:
         if st.button("Top 5 highest risk occupations", use_container_width=True):
             selected_query = "Show top 5 highest risk occupations with at least 500 applicants."
     with c_q3:
-        if st.button("Car owners vs Non-car owners risk", use_container_width=True):
+        if st.button("Car owners vs Non-car owners", use_container_width=True):
             selected_query = "Compare default rate and loan amount between car owners and non-car owners."
     with c_q4:
         if st.button("Risk profile across age cohorts", use_container_width=True):
@@ -693,7 +877,7 @@ with tab4:
                 st.markdown(f"""
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                     <span class="badge-latency">{res['latency_badge']}</span>
-                    <span style="font-size: 0.85rem; color: #94A3B8;">Records Returned: <b>{res['row_count']}</b></span>
+                    <span style="font-size: 0.85rem; color: #94A3B8;">Records Returned: <b style="color: #F8FAFC;">{res['row_count']}</b></span>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -732,7 +916,14 @@ with tab4:
                                 color_continuous_scale="Blues",
                                 labels={first_col: first_col.replace("_", " ").title(), target_col: target_col.replace("_", " ").title()}
                             )
-                            fig_dyn.update_layout(template="plotly_dark", plot_bgcolor="#1E293B", paper_bgcolor="#1E293B", margin=dict(l=20, r=20, t=30, b=20))
+                            fig_dyn.update_layout(
+                                template="plotly_dark",
+                                plot_bgcolor="rgba(19, 27, 46, 0.8)",
+                                paper_bgcolor="rgba(19, 27, 46, 0.8)",
+                                margin=dict(l=20, r=20, t=30, b=20),
+                                coloraxis_showscale=False
+                            )
+                            fig_dyn.update_traces(textposition='outside')
                             st.plotly_chart(fig_dyn, use_container_width=True)
             else:
                 st.error(f"Query Execution Error: {res['error']}")
@@ -744,29 +935,40 @@ with st.sidebar:
     st.markdown("### System & Model Telemetry")
     health = get_system_health()
     st.markdown(f"""
-    - **Platform**: `{health['platform']}`
-    - **Python**: `v{health['python_version']}`
-    - **CPU Utilization**: `{health['cpu_usage_pct']}%`
-    - **Memory Active**: `{health['memory_used_mb']} MB / {health['memory_total_mb']} MB`
-    - **Storage Free**: `{health['disk_free_gb']} GB`
-    """)
+    <div class="sidebar-telemetry">
+        <div style="font-size: 0.8rem; color: #94A3B8; margin-bottom: 4px;">HOST PLATFORM</div>
+        <div style="font-weight: 700; font-size: 0.95rem; color: #FFFFFF; font-family: 'JetBrains Mono';">{health['platform']} (Python {health['python_version']})</div>
+        <hr style="border: none; border-top: 1px solid #334155; margin: 8px 0;" />
+        <div style="display: flex; justify-content: space-between; font-size: 0.82rem; color: #94A3B8;">
+            <span>CPU Usage:</span>
+            <span style="color: #38BDF8; font-family: 'JetBrains Mono';">{health['cpu_usage_pct']}%</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.82rem; color: #94A3B8;">
+            <span>Memory Active:</span>
+            <span style="color: #38BDF8; font-family: 'JetBrains Mono';">{health['memory_used_mb']} MB</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.82rem; color: #94A3B8;">
+            <span>Storage Free:</span>
+            <span style="color: #38BDF8; font-family: 'JetBrains Mono';">{health['disk_free_gb']} GB</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
-    st.markdown("---")
     st.markdown("### Machine Learning Models")
     st.markdown("""
-    - **Champion**: `LightGBM GBDT`
+    - **Champion Model**: `LightGBM GBDT`
       - Imbalance: `scale_pos_weight=11.387`
       - Validation: `Stratified 5-Fold CV`
-    - **Baseline**: `Logistic Regression`
+    - **Baseline Model**: `Logistic Regression`
       - Imbalance: `class_weight='balanced'`
     """)
 
     st.markdown("---")
-    st.markdown("### LLM Provider")
+    st.markdown("### LLM Agent Provider")
     active_prov = Config.LLM_PROVIDER.upper()
     st.markdown(f"Active Provider: **{active_prov}**")
     if Config.GROQ_API_KEY:
-        st.caption("Groq API Key: Configured (llama-3.3-70b)")
+        st.caption("Groq API Key: Configured (llama-3.3-70b-versatile)")
     elif Config.GEMINI_API_KEY:
         st.caption("Gemini API Key: Configured")
     elif Config.OPENAI_API_KEY:
@@ -775,4 +977,4 @@ with st.sidebar:
         st.caption("Mode: Deterministic Offline Synthesizer")
 
     st.markdown("---")
-    st.caption("NeoStats AI-Powered Credit Risk Platform (Candidate Assessment)")
+    st.caption("Enterprise Credit Risk Intelligence Platform (CRIP)")
