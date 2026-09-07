@@ -24,56 +24,45 @@ def get_db_connection(read_only: bool = False) -> duckdb.DuckDBPyConnection:
 class DataLoader:
     def __init__(self, raw_data_path: Optional[Path] = None):
         self.raw_data_path = Path(raw_data_path) if raw_data_path else Config.RAW_DATA_PATH
+        self.parquet_path = self.raw_data_path.with_suffix(".parquet")
         self.conn = get_db_connection()
         self._is_ingested = False
 
     def ingest_to_duckdb(self, force_reload: bool = False) -> duckdb.DuckDBPyConnection:
         """
-        Ingests the application_train.csv directly into DuckDB table 'loan_applications'
-        using DuckDB's multi-threaded C++ CSV reader.
+        Ingests application_train.parquet or application_train.csv directly into DuckDB table 'loan_applications'
+        using DuckDB's multi-threaded C++ columnar reader.
         """
         if self._is_ingested and not force_reload:
             return self.conn
 
-        if not self.raw_data_path.exists():
-            logger.info("Raw dataset CSV not found on disk (e.g. Cloud deployment). Generating realistic benchmark dataset...")
+        if self.parquet_path.exists():
+            logger.info(f"Ingesting {self.parquet_path.name} into DuckDB OLAP engine...")
+            p_path_str = str(self.parquet_path).replace("\\", "/")
+            query = f"CREATE OR REPLACE TABLE loan_applications AS SELECT * FROM read_parquet('{p_path_str}');"
+            self.conn.execute(query)
+        elif self.raw_data_path.exists():
+            logger.info(f"Ingesting {self.raw_data_path.name} into DuckDB OLAP engine...")
+            csv_path_str = str(self.raw_data_path).replace("\\", "/")
+            query = f"CREATE OR REPLACE TABLE loan_applications AS SELECT * FROM read_csv_auto('{csv_path_str}', header=True);"
+            self.conn.execute(query)
+        else:
+            logger.info("Raw dataset not found on disk. Generating realistic benchmark dataset...")
             df_synth = self._generate_benchmark_df(n_samples=5000)
             self.conn.register("df_synth", df_synth)
             self.conn.execute("CREATE OR REPLACE TABLE loan_applications AS SELECT * FROM df_synth;")
-        else:
-            logger.info(f"Ingesting {self.raw_data_path.name} into DuckDB OLAP engine...")
-            
-            # Load schema SQL if exists
-            schema_file = Config.SQL_DIR / "schema.sql"
-            if schema_file.exists():
-                with open(schema_file, "r", encoding="utf-8") as f:
-                    schema_sql = f.read()
-                # Split and execute individual DDL statements safely
-                for statement in schema_sql.split(";"):
+
+        # Load schema views if exists
+        schema_file = Config.SQL_DIR / "schema.sql"
+        if schema_file.exists():
+            with open(schema_file, "r", encoding="utf-8") as f:
+                for statement in f.read().split(";"):
                     stmt = statement.strip()
-                    if stmt and not stmt.startswith("--"):
+                    if stmt and "VIEW" in stmt.upper():
                         try:
                             self.conn.execute(stmt)
                         except Exception as e:
-                            logger.warning(f"Schema statement notice: {e}")
-
-            csv_path_str = str(self.raw_data_path).replace("\\", "/")
-            query = f"""
-                CREATE OR REPLACE TABLE loan_applications AS 
-                SELECT * FROM read_csv_auto('{csv_path_str}', header=True);
-            """
-            self.conn.execute(query)
-            
-            # Re-apply analytical views
-            if schema_file.exists():
-                with open(schema_file, "r", encoding="utf-8") as f:
-                    for statement in f.read().split(";"):
-                        stmt = statement.strip()
-                        if stmt and "VIEW" in stmt.upper():
-                            try:
-                                self.conn.execute(stmt)
-                            except Exception as e:
-                                logger.warning(f"View re-creation notice: {e}")
+                            logger.warning(f"View re-creation notice: {e}")
 
         count = self.conn.execute("SELECT COUNT(*) FROM loan_applications;").fetchone()[0]
         logger.info(f"Successfully ingested {count:,} records into DuckDB 'loan_applications' table.")
@@ -145,14 +134,20 @@ class DataLoader:
 
     def load_raw_dataframe(self, max_rows: Optional[int] = None) -> pd.DataFrame:
         """Loads dataset into Pandas DataFrame."""
-        if not self.raw_data_path.exists():
+        if self.parquet_path.exists():
+            logger.info(f"Loading raw DataFrame from {self.parquet_path.name} (max_rows={max_rows})...")
+            df = pd.read_parquet(self.parquet_path)
+            if max_rows:
+                df = df.head(max_rows)
+        elif self.raw_data_path.exists():
+            logger.info(f"Loading raw DataFrame from {self.raw_data_path.name} (max_rows={max_rows})...")
+            if max_rows:
+                df = pd.read_csv(self.raw_data_path, nrows=max_rows)
+            else:
+                df = pd.read_csv(self.raw_data_path)
+        else:
             return self._generate_benchmark_df(n_samples=5000)
 
-        logger.info(f"Loading raw DataFrame from {self.raw_data_path.name} (max_rows={max_rows})...")
-        if max_rows:
-            df = pd.read_csv(self.raw_data_path, nrows=max_rows)
-        else:
-            df = pd.read_csv(self.raw_data_path)
         logger.info(f"Loaded DataFrame with shape: {df.shape}")
         return df
 
